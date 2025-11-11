@@ -86,8 +86,24 @@ let maxY;                    // Bottom boundary - closest distance (set in setup
 
 // Animation Speed Controls
 let walkFrameDelay;          // Walk animation frame delay (calculated from introversion)
-let idleFrameDelay;          // Idle animation frame delay (calculated from introversion)
+let idleFrameDelay; 
+         // Idle animation frame delay (calculated from introversion)
+let SHOW_VIDEO = true;              // Show/hide video feed (toggle with touch)
+let SHOW_ALL_KEYPOINTS = true; 
 
+let TRACKED_KEYPOINT_INDEX = 1;     // Which face point to use for interaction
+
+let CURSOR_SIZE = 30;               // Size of the tracking cursor (nose dot)
+let CURSOR_COLOR = [255, 50, 50];   // Color of cursor (red)
+let KEYPOINT_SIZE = 3;  
+let cam;                            // PhoneCamera instance
+let facemesh;                       // ML5 FaceMesh model
+let faces = [];                     // Detected faces (updated automatically)
+let cursor; 
+// Nose control for character
+let NOSE_CONTROL_ENABLED = true;    // Set to false to disable nose-driven movement
+let noseX = null, noseY = null;     // Smoothed nose coordinates in canvas space
+let noseSmoothing = 0.12;           // 0..1 lerp speed for nose -> character
 // ==============================================
 // PRELOAD - Load animations before setup
 // ==============================================
@@ -137,6 +153,27 @@ function setup() {
   // Set initial animation state
   character.changeAni('idle');
   character.ani.frameDelay = 8;  // Calm breathing initially
+
+
+    cam = createPhoneCamera('user', true, 'fitHeight');
+ enableCameraTap();
+
+cam.onReady(() => {
+ let options = {
+      maxFaces: 1,           // Only detect 1 face (faster)
+      refineLandmarks: false,// Skip detailed landmarks (faster)
+      runtime: 'mediapipe',  // Use MediaPipe runtime (same as HandPose)
+      flipHorizontal: false  // Don't flip in ML5 - cam.mapKeypoint() handles mirroring
+    };
+    
+ facemesh = ml5.faceMesh(options, () => {
+      facemesh.detectStart(cam.videoElement, gotFaces);
+    });
+  });
+function gotFaces(results) {
+  faces = results;
+}
+
 }
 
 // ==============================================
@@ -191,12 +228,69 @@ function draw() {
     // Microphone not enabled yet - keep character idle at bottom
     stopCharacter();
   }
+
+    if (faces.length > 0) {
+      drawFaceTracking();
+      // Use nose position to control character (optional)
+      if (noseX !== null) noseControlCharacter();
+    }
+
+    // Draw nose ellipse (tracking cursor)
+    if (noseX !== null) {
+      push();
+      noStroke();
+      fill(CURSOR_COLOR[0], CURSOR_COLOR[1], CURSOR_COLOR[2], 220);
+      ellipse(noseX, noseY, CURSOR_SIZE, CURSOR_SIZE);
+      pop();
+    }
   
   // Step 7: Draw perspective lines and visual elements
   drawPerspective();
   
   // Step 8: Draw UI information
   drawUI();
+}
+
+function drawFaceTracking() {
+  let face = faces[0];  // Ge
+ if (!face.keypoints || face.keypoints.length === 0) return;
+  
+ let trackedKeypoint = face.keypoints[TRACKED_KEYPOINT_INDEX];
+  if (!trackedKeypoint) return;
+  // Map ML5/camera keypoint into canvas coordinates using p5-phone helper
+ cursor = cam.mapKeypoint(trackedKeypoint);
+
+ // Update smoothed nose coordinates used for drawing and control
+ if (cursor && cursor.x !== undefined && cursor.y !== undefined) {
+   // Lerp for smooth movement
+   if (noseX === null) {
+     noseX = cursor.x;
+     noseY = cursor.y;
+   } else {
+     noseX = lerp(noseX, cursor.x, noseSmoothing);
+     noseY = lerp(noseY, cursor.y, noseSmoothing);
+   }
+ }
+}
+
+/**
+ * Gently move the character based on the nose position.
+ * This nudges the character horizontally toward the user's nose
+ * and applies a small vertical offset without fully overriding
+ * the existing introversion movement system.
+ */
+function noseControlCharacter() {
+  if (!NOSE_CONTROL_ENABLED || noseX === null) return;
+
+  // Horizontal control: map nose X to canvas X (camera mapping already applied)
+  let targetX = constrain(noseX, 0, width);
+  // Smoothly move character horizontally toward targetX
+  character.x = lerp(character.x, targetX, 0.12);
+
+  // Vertical soft influence: small offset toward nose Y but keep primary introversion logic
+  // We'll nudge character.y a little based on nose vertical position to add feel.
+  let verticalNudge = map(noseY, 0, height, -20, 20); // -20..20 px
+  character.y = constrain(lerp(character.y, character.y + verticalNudge, 0.06), minY, maxY);
 }
 
 // ==============================================
@@ -461,12 +555,7 @@ function drawUI() {
  * Toggles debug information visibility on touch/click.
  * Also prevents default mobile browser behavior.
  */
-function touchStarted() {
-  // Toggle debug info visibility
-  showDebugInfo = !showDebugInfo;
-  
-  return false;  // Returning false prevents default behavior
-}
+// (touchStarted removed here — using the camera toggle below)
 
 /**
  * Touch Ended Handler
@@ -474,6 +563,10 @@ function touchStarted() {
  * Prevents default mobile browser behavior when touch is released.
  * Ensures consistent interaction experience across devices.
  */
+function touchStarted() {
+  SHOW_VIDEO = !SHOW_VIDEO;
+  return false;  // Prevent default to avoid interfering with camera/ML5
+}
 function touchEnded() {
   return false;  // Returning false prevents default behavior
 }
