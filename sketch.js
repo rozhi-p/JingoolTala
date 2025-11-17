@@ -185,7 +185,7 @@ yybyyyybyy
 
   for (let i = 0; i < numSmileys; i++) {
     let s = new Sprite();
-    s.img = spriteArt(smileText, 32);
+    s.img = spriteArt(smileText, 12);
     s.position.x = random(width);
     s.position.y = random(height);
     smileys.push(s);
