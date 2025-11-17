@@ -299,6 +299,7 @@ function drawFaceTracking() {
      noseY = lerp(noseY, cursor.y, noseSmoothing);
    }
  }
+}
 
 /**
  * Gently move the character based on the nose position.
@@ -608,5 +609,5 @@ function touchEnded() {
 function mousePressed() {
   // Toggle debug info visibility
   showDebugInfo = !showDebugInfo;
-}
+
 }
