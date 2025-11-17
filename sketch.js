@@ -103,7 +103,10 @@ let cursor;
 // Nose control for character
 let NOSE_CONTROL_ENABLED = true;    // Set to false to disable nose-driven movement
 let noseX = null, noseY = null;     // Smoothed nose coordinates in canvas space
-let noseSmoothing = 0.12;           // 0..1 lerp speed for nose -> character
+let noseSmoothing = 0.12; 
+         // 0..1 lerp speed for nose -> character
+ let smileys = [];
+let numSmileys = 10;
 // ==============================================
 // PRELOAD - Load animations before setup
 // ==============================================
@@ -154,26 +157,43 @@ function setup() {
   character.changeAni('idle');
   character.ani.frameDelay = 8;  // Calm breathing initially
 
+  // Initialize camera for FaceMesh
+  cam = createPhoneCamera('user', true, 'fitHeight');
+  enableCameraTap();
 
-    cam = createPhoneCamera('user', true, 'fitHeight');
- enableCameraTap();
-
-cam.onReady(() => {
- let options = {
+  cam.onReady(() => {
+    let options = {
       maxFaces: 1,           // Only detect 1 face (faster)
       refineLandmarks: false,// Skip detailed landmarks (faster)
       runtime: 'mediapipe',  // Use MediaPipe runtime (same as HandPose)
       flipHorizontal: false  // Don't flip in ML5 - cam.mapKeypoint() handles mirroring
     };
     
- facemesh = ml5.faceMesh(options, () => {
+    facemesh = ml5.faceMesh(options, () => {
       facemesh.detectStart(cam.videoElement, gotFaces);
     });
   });
-function gotFaces(results) {
-  faces = results;
+
+  // Initialize smiley sprites
+  let smileText = `
+..yyyyyy
+.yybyybyy
+yyyyyyyyyy
+yybyyyybyy
+.yybbbbyy
+..yyyyyy`;
+
+  for (let i = 0; i < numSmileys; i++) {
+    let s = new Sprite();
+    s.img = spriteArt(smileText, 32);
+    s.position.x = random(width);
+    s.position.y = random(height);
+    smileys.push(s);
+  }
 }
 
+function gotFaces(results) {
+  faces = results;
 }
 
 // ==============================================
@@ -235,14 +255,22 @@ function draw() {
       if (noseX !== null) noseControlCharacter();
     }
 
-    // Draw nose ellipse (tracking cursor)
-    if (noseX !== null) {
-      push();
-      noStroke();
-      fill(CURSOR_COLOR[0], CURSOR_COLOR[1], CURSOR_COLOR[2], 220);
-      ellipse(noseX, noseY, CURSOR_SIZE, CURSOR_SIZE);
-      pop();
+  // Draw nose ellipse (tracking cursor)
+  if (noseX !== null) {
+    push();
+    noStroke();
+    fill(CURSOR_COLOR[0], CURSOR_COLOR[1], CURSOR_COLOR[2], 220);
+    ellipse(noseX, noseY, CURSOR_SIZE, CURSOR_SIZE);
+    pop();
+  }
+
+  // Check smiley collisions with character
+  for (let i = smileys.length - 1; i >= 0; i--) {
+    if (smileys[i].overlaps(character)) {
+      smileys[i].remove();
+      smileys.splice(i, 1);
     }
+  }
   
   // Step 7: Draw perspective lines and visual elements
   drawPerspective();
@@ -271,7 +299,6 @@ function drawFaceTracking() {
      noseY = lerp(noseY, cursor.y, noseSmoothing);
    }
  }
-}
 
 /**
  * Gently move the character based on the nose position.
@@ -545,6 +572,8 @@ function drawUI() {
   pop();
 }
 
+
+
 // ==============================================
 // TOUCH EVENT HANDLERS - Prevent default browser behavior
 // ==============================================
@@ -579,4 +608,5 @@ function touchEnded() {
 function mousePressed() {
   // Toggle debug info visibility
   showDebugInfo = !showDebugInfo;
+}
 }
