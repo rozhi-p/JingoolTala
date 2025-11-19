@@ -105,8 +105,8 @@ let NOSE_CONTROL_ENABLED = true;    // Set to false to disable nose-driven movem
 let noseX = null, noseY = null;     // Smoothed nose coordinates in canvas space
 let noseSmoothing = 0.12; 
          // 0..1 lerp speed for nose -> character
- let smileys = [];
-let numSmileys = 10;
+ let lilos = [];
+let numLilos = 10;
 
 
 // ==============================================
@@ -177,27 +177,20 @@ function setup() {
   });
 
   // Initialize smiley sprites
-  let smileText = `
-..yyyyyy
-.yybyybyy
-yyyyyyyyyy
-yybyyyybyy
-.yybbbbyy
-..yyyyyy`;
 
-let smileyZone = {
+let liloZone = {
   minX: 50,
   maxX: 350,
   minY: 200,
   maxY: 600,
 };
-  for (let i = 0; i < numSmileys; i++) {
+  for (let i = 0; i < numLilos; i++) {
     let s = new Sprite();
     s.img = spriteArt(smileText, 12);
-    s.position.x = random(smileyZone.minX, smileyZone.maxX);
-    s.position.y = random(smileyZone.minY, smileyZone.maxY);
+    s.position.x = random(liloZone.minX, liloZone.maxX);
+    s.position.y = random(liloZone.minY, liloZone.maxY);
 
-    smileys.push(s);
+    lilo.push(s);
   }
 
   
@@ -277,10 +270,10 @@ function draw() {
   }
 
   // Check smiley collisions with character
-  for (let i = smileys.length - 1; i >= 0; i--) {
-    if (smileys[i].overlaps(character)) {
-      smileys[i].remove();
-      smileys.splice(i, 1);
+  for (let i = lilos.length - 1; i >= 0; i--) {
+    if (lilos[i].overlaps(character)) {
+      lilos[i].remove();
+      lilos.splice(i, 1);
     }
   }
   
