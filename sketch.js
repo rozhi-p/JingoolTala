@@ -107,6 +107,8 @@ let noseSmoothing = 0.12;
          // 0..1 lerp speed for nose -> character
  let smileys = [];
 let numSmileys = 10;
+
+
 // ==============================================
 // PRELOAD - Load animations before setup
 // ==============================================
@@ -183,14 +185,24 @@ yybyyyybyy
 .yybbbbyy
 ..yyyyyy`;
 
+let smileyZone = {
+  minX: 50,
+  maxX: 350,
+  minY: 200,
+  maxY: 600,
+};
   for (let i = 0; i < numSmileys; i++) {
     let s = new Sprite();
     s.img = spriteArt(smileText, 12);
-    s.position.x = random(width);
-    s.position.y = random(height);
+    s.position.x = random(smileyZone.minX, smileyZone.maxX);
+    s.position.y = random(smileyZone.minY, smileyZone.maxY);
+
     smileys.push(s);
   }
+
+  
 }
+
 
 function gotFaces(results) {
   faces = results;
