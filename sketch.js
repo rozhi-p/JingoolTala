@@ -186,14 +186,14 @@ let lilosZone = {
   minY: 200,
   maxY: 600,
 };
-  for (let i = 0; i < numLilos; i++) {
-    let s = new Sprite();
-    s.image = '';
-    s.position.x = random(lilosZone.minX, lilosZone.maxX);
-    s.position.y = random(lilosZone.minY, lilosZone.maxY);
+ for (let i = 0; i < numLilos; i++) {
+  let s = new Sprite();
+  s.image = '';  // <-- This is empty, so the sprite has no visual image and won't show up
+  s.position.x = random(lilosZone.minX, lilosZone.maxX);
+  s.position.y = random(lilosZone.minY, lilosZone.maxY);
 
-    lilos.push(s);
-  }
+  lilos.push(s);
+}
 
   
 }
