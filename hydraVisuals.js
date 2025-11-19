@@ -53,3 +53,7 @@ function setupHydra() {
     )
     .out();
 }
+
+function drawHydra(){
+  
+}
