@@ -107,7 +107,7 @@ let noseSmoothing = 0.12;
          // 0..1 lerp speed for nose -> character
  let lilos = [];
 let numLilos = 10;
-
+let smileText ;
 
 // ==============================================
 // PRELOAD - Load animations before setup
@@ -121,6 +121,8 @@ function preload() {
   
   // Load walk backward animation sequence (13 frames)
   walkBackAni = loadAni('animations/walkBack/walkAnimBack_1.png', 15);
+
+
 }
 
 // ==============================================
@@ -178,7 +180,7 @@ function setup() {
 
   // Initialize smiley sprites
 
-let liloZone = {
+let lilosZone = {
   minX: 50,
   maxX: 350,
   minY: 200,
@@ -186,11 +188,11 @@ let liloZone = {
 };
   for (let i = 0; i < numLilos; i++) {
     let s = new Sprite();
-    s.img = spriteArt(smileText, 12);
-    s.position.x = random(liloZone.minX, liloZone.maxX);
-    s.position.y = random(liloZone.minY, liloZone.maxY);
+    s.image = '';
+    s.position.x = random(lilosZone.minX, lilosZone.maxX);
+    s.position.y = random(lilosZone.minY, lilosZone.maxY);
 
-    lilo.push(s);
+    lilos.push(s);
   }
 
   
