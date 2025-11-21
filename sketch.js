@@ -108,7 +108,7 @@ let noseSmoothing = 0.12;
  let smiley;
  // let shapeShifterAni;;
 let beckImage;
-let beckSize = 500;
+let beckSize = 200;  // Reduced from 500 so it's not too big
 let beckX, beckY;
 let beckVisible = true;
 
@@ -127,18 +127,7 @@ function preload() {
   walkBackAni = loadAni('animations/walkBack/walkAnimBack_1.png', 15);
 
   beckImage = loadImage('assets/beck.png'); 
-  // starImage = loadImage('assets/beck.png');
-  // logo = loadImage('assets/beck.png'); 
-
-  //  	shapeShifterAni = loadAni(
-	// 	'assets/asterisk.webp',
-	// 	'assets/mess.webp',
-	// 	'assets/cloud.webp',
-	// 	'assets/triangle.webp', 
-	// 	'assets/star.webp'
-	// );
-
-	// shapeShifterAni.frameDelay = 20;
+  
 }
 // ==============================================
 // SETUP - Initialize everything once
@@ -149,8 +138,10 @@ function setup() {
   
   // Create portrait canvas matching phone proportions (9:16 aspect ratio)
   createCanvas(405, 720);
-  beckX = width * 0.65 - beckImage.width / 2; // 65% across canvas width
-  beckY = height / 2 - beckImage.height / 2;
+ 
+  beckX = width / 2;
+  beckY = height / 2;
+  maxY = height - 150;
   
   // Set bottom boundary (character's closest position)
   maxY = height - 150;
@@ -284,10 +275,10 @@ function draw() {
   }
 
   // Draw beck.png in the center of the screen
-   if (beckVisible && beckImage) {
+    if (beckVisible && beckImage) {
     let d = dist(character.x, character.y, width / 2, height / 2);
-    
-    if (d < beckSize / 2) {  // Using beckSize/2 so collision matches image size
+
+    if (d < beckSize / 2) {
       beckVisible = false;
       console.log("Collision with beck!");
     } else {
