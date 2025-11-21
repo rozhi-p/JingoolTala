@@ -106,7 +106,7 @@ let noseX = null, noseY = null;     // Smoothed nose coordinates in canvas space
 let noseSmoothing = 0.12; 
          // 0..1 lerp speed for nose -> character
  let smiley= [];
-let numSmiley = 10;
+let numSmileys = 10;
 
 
 // ==============================================
@@ -191,7 +191,7 @@ let smileyZone = {
   minY: 200,
   maxY: 600,
 };
-  for (let i = 0; i < numSmiley; i++) {
+  for (let i = 0; i < numSmileys; i++) {
     let s = new Sprite();
     s.img = spriteArt(smileText, 12);
     s.position.x = random(smileyZone.minX, smileyZone.maxX);
