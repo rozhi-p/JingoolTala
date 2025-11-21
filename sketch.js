@@ -109,7 +109,15 @@ let noseSmoothing = 0.12;
 //let logo;
 //let star;
 //let starImage;
-let heckImage;
+let heck;  // Image variable for "heck"
+let heckObjects = [];
+const numHeck = 10;
+const centerZone = {
+  xMin: width * 0.4,
+  xMax: width * 0.6,
+  yMin: height * 0.4,
+  yMax: height * 0.6
+};
 
 
 // ==============================================
@@ -127,7 +135,7 @@ function preload() {
     //starImage = loadImage('assets/star.webp');
 
   // let logo = loadImage('assets/heck.png');
-  heckImage = loadImage('assets/heck.png');
+ heck = loadImage('heck.png');
 }
 
 // ==============================================
@@ -195,6 +203,16 @@ yybyybbbyy
 	smiley = new Sprite();
 	smiley.img = spriteArt(smileText, 32);
 
+  while (heckObjects.length < numHeck) {
+    let x = random(0, width - heck.width);
+    let y = random(0, height - heck.height);
+    // Skip if position is inside center no-go zone
+    if (x > centerZone.xMin && x < centerZone.xMax &&
+        y > centerZone.yMin && y < centerZone.yMax) {
+      continue;
+    }
+    heckObjects.push({x: x, y: y, visible: true});
+  }
 
 
     ////tint(255, 0, 0, 128);
@@ -293,12 +311,14 @@ function draw() {
 
 
   // Step 7: Draw perspective lines and visual elements
-   background(100, 150, 200); // Clear background (optional)
-  
-  let randomX = random(0, width - heckImage.width);
-  let randomY = random(0, height - heckImage.height);
-
-  image(heckImage, randomX, randomY);
+    for (let i = heckObjects.length - 1; i >= 0; i--) {
+    if (heckObjects[i].visible) {
+      image(heck, heckObjects[i].x, heckObjects[i].y);
+      // Assuming character has x, y properties and width, height
+      if (collides(character, heckObjects[i])) {
+        heckObjects.splice(i, 1); // Remove heck object on collision
+      }
+    }
 
   drawPerspective();
   
@@ -326,6 +346,13 @@ function drawFaceTracking() {
      noseY = lerp(noseY, cursor.y, noseSmoothing);
    }
  }
+}
+
+function collides(char, obj) {
+  return !(char.x + char.width < obj.x ||
+           char.x > obj.x + heck.width ||
+           char.y + char.height < obj.y ||
+           char.y > obj.y + heck.height);
 }
 
 /**
