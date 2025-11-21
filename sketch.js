@@ -124,7 +124,7 @@ function preload() {
   
   // Load walk backward animation sequence (13 frames)
   walkBackAni = loadAni('animations/walkBack/walkAnimBack_1.png', 15);
-    starImage = loadImage('assets/star.webp');
+    //starImage = loadImage('assets/star.webp');
 
   // let logo = loadImage('assets/heck.png');
 }
