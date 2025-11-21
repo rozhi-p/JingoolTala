@@ -314,7 +314,7 @@ function draw() {
     image(beckImage, beckX, beckY);
   }
 
-  drawSprites();
+  //drawSprites();
 
   drawPerspective();
   
