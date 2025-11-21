@@ -106,7 +106,7 @@ let noseX = null, noseY = null;     // Smoothed nose coordinates in canvas space
 let noseSmoothing = 0.12; 
          // 0..1 lerp speed for nose -> character
  let smiley;
-let logo;
+//let logo;
 
 
 
@@ -123,7 +123,7 @@ function preload() {
   // Load walk backward animation sequence (13 frames)
   walkBackAni = loadAni('animations/walkBack/walkAnimBack_1.png', 15);
 
-   let logo = loadImage('assets/heck.png');
+  // let logo = loadImage('assets/heck.png');
 }
 
 // ==============================================
@@ -193,8 +193,8 @@ yybyybbbyy
 
 
 
-    tint(255, 0, 0, 128);
-  image(logo, 0, 0, 200, 200);
+    ////tint(255, 0, 0, 128);
+  //image(logo, 0, 0, 200, 200);
 
 
 
@@ -284,7 +284,7 @@ function draw() {
 
   
   // Step 7: Draw perspective lines and visual elements
-  drawSprites();
+
   drawPerspective();
   
   // Step 8: Draw UI information
