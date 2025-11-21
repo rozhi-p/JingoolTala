@@ -106,13 +106,12 @@ let noseX = null, noseY = null;     // Smoothed nose coordinates in canvas space
 let noseSmoothing = 0.12; 
          // 0..1 lerp speed for nose -> character
  let smiley;
- let shapeShifterAni;
-//let logo;
-//let star;
-//let starImage;
-/*let beckImage;
+ // let shapeShifterAni;;
+let beckImage;
+let beckSize = 500;
 let beckX, beckY;
-let beckVisible = true;*/
+let beckVisible = true;
+
 
 // ==============================================
 // PRELOAD - Load animations before setup
@@ -127,19 +126,19 @@ function preload() {
   // Load walk backward animation sequence (13 frames)
   walkBackAni = loadAni('animations/walkBack/walkAnimBack_1.png', 15);
 
- // beckImage = loadImage('assets/beck.png'); 
-    //starImage = loadImage('assets/star.webp');
+  beckImage = loadImage('assets/beck.png'); 
+  // starImage = loadImage('assets/beck.png');
+  // logo = loadImage('assets/beck.png'); 
 
-  // let logo = loadImage('assets/heck.png');
-   	shapeShifterAni = loadAni(
-		'assets/asterisk.webp',
-		'assets/mess.webp',
-		'assets/cloud.webp',
-		'assets/triangle.webp',
-		'assets/star.webp'
-	);
+  //  	shapeShifterAni = loadAni(
+	// 	'assets/asterisk.webp',
+	// 	'assets/mess.webp',
+	// 	'assets/cloud.webp',
+	// 	'assets/triangle.webp', 
+	// 	'assets/star.webp'
+	// );
 
-	shapeShifterAni.frameDelay = 20;
+	// shapeShifterAni.frameDelay = 20;
 }
 // ==============================================
 // SETUP - Initialize everything once
@@ -150,7 +149,7 @@ function setup() {
   
   // Create portrait canvas matching phone proportions (9:16 aspect ratio)
   createCanvas(405, 720);
-   beckX = width * 0.65 - beckImage.width / 2; // 65% across canvas width
+  beckX = width * 0.65 - beckImage.width / 2; // 65% across canvas width
   beckY = height / 2 - beckImage.height / 2;
   
   // Set bottom boundary (character's closest position)
@@ -209,6 +208,8 @@ yybyybbbyy
 	smiley.img = spriteArt(smileText, 32);
 
  }
+
+ 
 
 function gotFaces(results) {
   faces = results;
@@ -282,36 +283,19 @@ function draw() {
     pop();
   }
 
- 
-  /*for (let i = heckSprites.length - 1; i >= 0; i--) {
-  if (heckSprites[i].overlaps(character)) {
-    heckSprites[i].remove();    // Remove from canvas and memory
-    heckSprites.splice(i, 1);    // Remove from array to avoid further checks
+  // Draw beck.png in the center of the screen
+   if (beckVisible && beckImage) {
+    let d = dist(character.x, character.y, width / 2, height / 2);
+    
+    if (d < beckSize / 2) {  // Using beckSize/2 so collision matches image size
+      beckVisible = false;
+      console.log("Collision with beck!");
+    } else {
+      imageMode(CENTER);
+      image(beckImage, width / 2, height / 2, beckSize, beckSize);
+      imageMode(CORNER);
+    }
   }
-}*/
-
-  //let v = cos(frameCount * 0.05) * 0.5 + 0.5;  // oscillates between 0 and 1
-  //star.opacity = v;
-  //star.scale = v;
-
-
-  // Step 7: Draw perspective lines and visual elements
-  /*  if (beckVisible &&
-      character.position.x + character.width / 2 > beckX &&
-      character.position.x - character.width / 2 < beckX + beckImage.width &&
-      character.position.y + character.height / 2 > beckY &&
-      character.position.y - character.height / 2 < beckY + beckImage.height) {
-    beckVisible = false;  // Hide the image after collision
-  }
-
-  // Draw heck image if visible
-  if (beckVisible) {
-    image(beckImage, beckX, beckY);
-  }*/
-
-  //drawSprites();
-   animation(shapeShifterAni, width/2, height/2);
-   
   drawPerspective();
   
   // Step 8: Draw UI information
