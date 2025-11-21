@@ -312,7 +312,7 @@ function draw() {
     }
   }
 
-  drawSprites();
+  //drawSprites();
 
   drawPerspective();
   
