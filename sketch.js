@@ -105,8 +105,8 @@ let NOSE_CONTROL_ENABLED = true;    // Set to false to disable nose-driven movem
 let noseX = null, noseY = null;     // Smoothed nose coordinates in canvas space
 let noseSmoothing = 0.12; 
          // 0..1 lerp speed for nose -> character
- let smileys = [];
-let numSmileys = 10;
+ let lilos = [];
+let numLilos = 10;
 
 
 // ==============================================
@@ -121,6 +121,7 @@ function preload() {
   
   // Load walk backward animation sequence (13 frames)
   walkBackAni = loadAni('animations/walkBack/walkAnimBack_1.png', 15);
+   img = loadImage('bong.jpg');
 }
 
 // ==============================================
@@ -177,27 +178,21 @@ function setup() {
   });
 
   // Initialize smiley sprites
-  let smileText = `
-..yyyyyy
-.yybyybyy
-yyyyyyyyyy
-yybyyyybyy
-.yybbbbyy
-..yyyyyy`;
+  let lilos = [];
 
-let smileyZone = {
+let lilosZone = {
   minX: 50,
   maxX: 350,
   minY: 200,
   maxY: 600,
 };
-  for (let i = 0; i < numSmileys; i++) {
+  for (let i = 0; i < numLilos; i++) {
     let s = new Sprite();
-    s.img = spriteArt(smileText, 12);
-    s.position.x = random(smileyZone.minX, smileyZone.maxX);
-    s.position.y = random(smileyZone.minY, smileyZone.maxY);
+    s.img = (spriteArtlilosText, 12);
+    s.position.x = random(lilosZone.minX, lilosZone.maxX);
+    s.position.y = random(lilosZone.minY, lilosZone.maxY);
 
-    smileys.push(s);
+    slilos.push(s);
   }
 
   
@@ -278,9 +273,9 @@ function draw() {
 
   // Check smiley collisions with character
   for (let i = smileys.length - 1; i >= 0; i--) {
-    if (smileys[i].overlaps(character)) {
-      smileys[i].remove();
-      smileys.splice(i, 1);
+    if (lilos[i].overlaps(character)) {
+      lilos[i].remove();
+      lilos.splice(i, 1);
     }
   }
   
@@ -513,8 +508,10 @@ function updateDepthScale() {
 function drawPerspective() {
   // Start drawing context with semi-transparent white lines
   push();
+  baackground-image("bong.jpg")
   stroke(255, 150);  // White with 150 alpha (semi-transparent)
   strokeWeight(2);
+
   
   // LEFT GROUND/WALL LINE
   // Starts at bottom-left corner, angles toward upper-center (40% width)
@@ -530,11 +527,20 @@ function drawPerspective() {
   // Connects the two angled lines at minY (back boundary)
   // Forms the "back wall" of the corridor
   line(width * 0.4, minY, width * 0.6, minY);
+  let x = width * 0.4;
+let y = minY - 5; // centers the image around minY, assuming thickness 10
+let w = width * 0.6 - x;
+let h = 10; // thickness you want for the "line"
+
+image(img, x, y, w, h);
+  
   
   // LEFT VERTICAL WALL
   // Extends from back wall connection point to top of canvas
   // Forms left side of corridor
   line(width * 0.4, minY, width * 0.4, 0);
+
+  square
   
   // RIGHT VERTICAL WALL
   // Extends from back wall connection point to top of canvas
