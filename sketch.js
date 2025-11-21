@@ -109,10 +109,10 @@ let noseSmoothing = 0.12;
 //let logo;
 //let star;
 //let starImage;
-/*let heck = [];
-let numHeck = 10;
-let heckImage;
-const heckImageZone = { minX: 50, maxX: 350, minY: 200, maxY: 600 };*/
+let beck = [];
+let numBeck = 10;
+let beckImage;
+const beckImageZone = { minX: 50, maxX: 350, minY: 200, maxY: 600 };*/
 // ==============================================
 // PRELOAD - Load animations before setup
 // ==============================================
@@ -126,7 +126,7 @@ function preload() {
   // Load walk backward animation sequence (13 frames)
   walkBackAni = loadAni('animations/walkBack/walkAnimBack_1.png', 15);
 
-  //heckImage = loadImage('assets/heck.png'); 
+  beckImage = loadImage('assets/beck.png'); 
     //starImage = loadImage('assets/star.webp');
 
   // let logo = loadImage('assets/heck.png');
@@ -207,13 +207,13 @@ yybyybbbyy
 
 // star = new Sprite(width / 2, height / 2);
   //star.addImage(starImage);
-  /* for (let i = 0; i < numHeck; i++) {
+   for (let i = 0; i < numBeck; i++) {
     let s = new Sprite();
-    s.img = heckImage;
-    s.position.x = random(heckImageZone.minX, heckImageZone.maxX);
-    s.position.y = random(heckImageZone.minY, heckImageZone.maxY);
-    heck.push(s);
-  }*/
+    s.img = beckImage;
+    s.position.x = random(beckImageZone.minX, beckImageZone.maxX);
+    s.position.y = random(beckImageZone.minY, beckImageZone.maxY);
+    beck.push(s);
+  }
   
   
 }
@@ -305,10 +305,10 @@ function draw() {
 
 
   // Step 7: Draw perspective lines and visual elements
-  /* for (let i = heck.length - 1; i >= 0; i--) {
-    if (heck[i].overlaps(character)) {
-      heck[i].remove();
-      heck.splice(i, 1);
+   for (let i = beck.length - 1; i >= 0; i--) {
+    if (beck[i].overlaps(character)) {
+     beck[i].remove();
+      beck.splice(i, 1);
     }
   }
 
