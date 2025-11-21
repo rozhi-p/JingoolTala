@@ -109,9 +109,9 @@ let noseSmoothing = 0.12;
 //let logo;
 //let star;
 //let starImage;
-let heckImage;
-let heckX, heckY;
-let heckVisible = true;
+let beckImage;
+let beckX, beckY;
+let beckVisible = true;
 
 // ==============================================
 // PRELOAD - Load animations before setup
@@ -142,8 +142,8 @@ function setup() {
   
   // Create portrait canvas matching phone proportions (9:16 aspect ratio)
   createCanvas(405, 720);
-   heckX = width * 0.65 - heckImage.width / 2; // 65% across canvas width
-  heckY = height / 2 - heckImage.height / 2;
+   beckX = width * 0.65 - beckImage.width / 2; // 65% across canvas width
+  beckY = height / 2 - beckImage.height / 2;
   
   // Set bottom boundary (character's closest position)
   maxY = height - 150;
@@ -301,17 +301,17 @@ function draw() {
 
 
   // Step 7: Draw perspective lines and visual elements
-    if (heckVisible &&
-      character.position.x + character.width / 2 > heckX &&
-      character.position.x - character.width / 2 < heckX + heckImage.width &&
-      character.position.y + character.height / 2 > heckY &&
-      character.position.y - character.height / 2 < heckY + heckImage.height) {
-    heckVisible = false;  // Hide the image after collision
+    if (beckVisible &&
+      character.position.x + character.width / 2 > beckX &&
+      character.position.x - character.width / 2 < beckX + beckImage.width &&
+      character.position.y + character.height / 2 > beckY &&
+      character.position.y - character.height / 2 < beckY + beckImage.height) {
+    beckVisible = false;  // Hide the image after collision
   }
 
   // Draw heck image if visible
-  if (heckVisible) {
-    image(heckImage, heckX, heckY);
+  if (beckVisible) {
+    image(beckImage, beckX, beckY);
   }
 
   drawSprites();
