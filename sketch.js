@@ -111,13 +111,8 @@ let noseSmoothing = 0.12;
 //let starImage;
 let heck = [];
 let numHeck = 10;
-let heckImageZone = {
-  minX: 50,
-  maxX: 350,
-  minY: 200,
-  maxY: 600,
-};
-
+let heckImage;
+const heckImageZone = { minX: 50, maxX: 350, minY: 200, maxY: 600 };
 // ==============================================
 // PRELOAD - Load animations before setup
 // ==============================================
@@ -130,6 +125,8 @@ function preload() {
   
   // Load walk backward animation sequence (13 frames)
   walkBackAni = loadAni('animations/walkBack/walkAnimBack_1.png', 15);
+
+  heckImage = loadImage('assets/heck.png'); 
     //starImage = loadImage('assets/star.webp');
 
   // let logo = loadImage('assets/heck.png');
@@ -210,16 +207,13 @@ yybyybbbyy
 
 // star = new Sprite(width / 2, height / 2);
   //star.addImage(starImage);
-    for (let i = 0; i < numHeck; i++) {
+   for (let i = 0; i < numHeck; i++) {
     let s = new Sprite();
-    s.img = heckImage; // preload heckImage at the top of your code
+    s.img = heckImage;
     s.position.x = random(heckImageZone.minX, heckImageZone.maxX);
     s.position.y = random(heckImageZone.minY, heckImageZone.maxY);
     heck.push(s);
   }
-
-   character = new Sprite(width / 2, height - 150);
-  character.img = characterImage;
   
   
 }
@@ -311,14 +305,12 @@ function draw() {
 
 
   // Step 7: Draw perspective lines and visual elements
-  for (let i = heck.length - 1; i >= 0; i--) {
+   for (let i = heck.length - 1; i >= 0; i--) {
     if (heck[i].overlaps(character)) {
       heck[i].remove();
       heck.splice(i, 1);
     }
   }
-
-  // Your existing character movement logic here
 
   drawSprites();
 
