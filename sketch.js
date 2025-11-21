@@ -105,8 +105,7 @@ let NOSE_CONTROL_ENABLED = true;    // Set to false to disable nose-driven movem
 let noseX = null, noseY = null;     // Smoothed nose coordinates in canvas space
 let noseSmoothing = 0.12; 
          // 0..1 lerp speed for nose -> character
- let smiley= [];
-let numSmileys = 10;
+ let smiley;
 
 
 // ==============================================
@@ -177,7 +176,7 @@ function setup() {
   });
 
   // Initialize smiley sprites
-  let smileText = `
+  	let smileText = `
 ..yyyyyy
 .yybyybyy
 yyyyyyyyyy
@@ -185,20 +184,13 @@ yybyyyybyy
 .yybbbbyy
 ..yyyyyy`;
 
-let smileyZone = {
-  minX: 50,
-  maxX: 350,
-  minY: 200,
-  maxY: 600,
-};
-  for (let i = 0; i < numSmileys; i++) {
-    let s = new Sprite();
-    s.img = spriteArt(smileText, 12);
-    s.position.x = random(smileyZone.minX, smileyZone.maxX);
-    s.position.y = random(smileyZone.minY, smileyZone.maxY);
+	smiley = new Sprite();
+	smiley.img = spriteArt(smileText, 32);
 
-    smiley.push(s);
-  }
+  
+
+
+
 
   
 }
