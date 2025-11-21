@@ -107,8 +107,8 @@ let noseSmoothing = 0.12;
          // 0..1 lerp speed for nose -> character
  let smiley;
 //let logo;
-let star;
-let starImage;
+//let star;
+//let starImage;
 
 
 
@@ -200,8 +200,8 @@ yybyybbbyy
   //image(logo, 0, 0, 200, 200);
 
 
- star = new Sprite(width / 2, height / 2);
-  star.addImage(starImage);
+// star = new Sprite(width / 2, height / 2);
+  //star.addImage(starImage);
   
 }
 
@@ -286,11 +286,11 @@ function draw() {
   }
 }*/
 
-  let v = cos(frameCount * 0.05) * 0.5 + 0.5;  // oscillates between 0 and 1
-  star.opacity = v;
-  star.scale = v;
+  //let v = cos(frameCount * 0.05) * 0.5 + 0.5;  // oscillates between 0 and 1
+  //star.opacity = v;
+  //star.scale = v;
 
-  drawSprites();
+
   // Step 7: Draw perspective lines and visual elements
 
   drawPerspective();
