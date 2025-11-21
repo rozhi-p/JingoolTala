@@ -112,7 +112,7 @@ let noseSmoothing = 0.12;
 let beck = [];
 let numBeck = 10;
 let beckImage;
-const beckImageZone = { minX: 50, maxX: 350, minY: 200, maxY: 600 };*/
+const beckImageZone = { minX: 50, maxX: 350, minY: 200, maxY: 600 };
 // ==============================================
 // PRELOAD - Load animations before setup
 // ==============================================
@@ -312,7 +312,7 @@ function draw() {
     }
   }
 
-  drawSprites();*/
+  drawSprites();
 
   drawPerspective();
   
