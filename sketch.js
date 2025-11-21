@@ -105,8 +105,8 @@ let NOSE_CONTROL_ENABLED = true;    // Set to false to disable nose-driven movem
 let noseX = null, noseY = null;     // Smoothed nose coordinates in canvas space
 let noseSmoothing = 0.12; 
          // 0..1 lerp speed for nose -> character
- let smileys = [];
-let numSmileys = 10;
+ let smiley= [];
+let numSmiley = 10;
 
 
 // ==============================================
@@ -191,13 +191,13 @@ let smileyZone = {
   minY: 200,
   maxY: 600,
 };
-  for (let i = 0; i < numSmileys; i++) {
+  for (let i = 0; i < numSmiley; i++) {
     let s = new Sprite();
     s.img = spriteArt(smileText, 12);
     s.position.x = random(smileyZone.minX, smileyZone.maxX);
     s.position.y = random(smileyZone.minY, smileyZone.maxY);
 
-    smileys.push(s);
+    smiley.push(s);
   }
 
   
@@ -277,10 +277,10 @@ function draw() {
   }
 
   // Check smiley collisions with character
-  for (let i = smileys.length - 1; i >= 0; i--) {
-    if (smileys[i].overlaps(character)) {
-      smileys[i].remove();
-      smileys.splice(i, 1);
+  for (let i = smiley.length - 1; i >= 0; i--) {
+    if (smiley[i].overlaps(character)) {
+      smiley[i].remove();
+      smiley.splice(i, 1);
     }
   }
   
