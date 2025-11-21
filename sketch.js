@@ -107,6 +107,8 @@ let noseSmoothing = 0.12;
          // 0..1 lerp speed for nose -> character
  let lilos = [];
 let numLilos = 10;
+let img1, img2;
+
 
 
 // ==============================================
@@ -121,7 +123,9 @@ function preload() {
   
   // Load walk backward animation sequence (13 frames)
   walkBackAni = loadAni('animations/walkBack/walkAnimBack_1.png', 15);
-   img = loadImage('bong.jpg');
+  let lilos= loadImage('images/lilos.png');
+   img1 = loadImage('images/bong.jpg');
+   img2 = loadImage('images/hey.jpg');
 }
 
 // ==============================================
@@ -188,11 +192,11 @@ let lilosZone = {
 };
   for (let i = 0; i < numLilos; i++) {
     let s = new Sprite();
-    s.img = (spriteArtlilosText, 12);
+    s.addImage(lilos);
     s.position.x = random(lilosZone.minX, lilosZone.maxX);
     s.position.y = random(lilosZone.minY, lilosZone.maxY);
 
-    slilos.push(s);
+    lilos.push(s);
   }
 
   
@@ -208,7 +212,7 @@ function gotFaces(results) {
 // ==============================================
 function draw() {
   // Clear background with sky blue color
-  background(100, 150, 200);
+  background(img); 
   
   // Check if microphone is enabled (user has granted microphone permission)
   if (mic && mic.enabled) {
@@ -272,7 +276,7 @@ function draw() {
   }
 
   // Check smiley collisions with character
-  for (let i = smileys.length - 1; i >= 0; i--) {
+  for (let i = lilos.length - 1; i >= 0; i--) {
     if (lilos[i].overlaps(character)) {
       lilos[i].remove();
       lilos.splice(i, 1);
@@ -504,10 +508,11 @@ function updateDepthScale() {
  * - 2 angled lines from bottom corners converge toward top center
  * - 1 horizontal line at back connects the converging lines
  * - 2 vertical lines extend from back to top of canvas (walls)
- */
+ */ 
 function drawPerspective() {
   // Start drawing context with semi-transparent white lines
   push();
+  background(img1);
   stroke(255, 150);  // White with 150 alpha (semi-transparent)
   strokeWeight(2);
 
