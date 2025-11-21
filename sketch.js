@@ -109,7 +109,7 @@ let noseSmoothing = 0.12;
 //let logo;
 //let star;
 //let starImage;
-
+let heckImage;
 
 
 // ==============================================
@@ -127,6 +127,7 @@ function preload() {
     //starImage = loadImage('assets/star.webp');
 
   // let logo = loadImage('assets/heck.png');
+  heckImage = loadImage('assets/heck.png');
 }
 
 // ==============================================
@@ -292,6 +293,12 @@ function draw() {
 
 
   // Step 7: Draw perspective lines and visual elements
+   background(100, 150, 200); // Clear background (optional)
+  
+  let randomX = random(0, width - heckImage.width);
+  let randomY = random(0, height - heckImage.height);
+
+  image(heckImage, randomX, randomY);
 
   drawPerspective();
   
