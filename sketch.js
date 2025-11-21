@@ -106,9 +106,9 @@ let noseX = null, noseY = null;     // Smoothed nose coordinates in canvas space
 let noseSmoothing = 0.12; 
          // 0..1 lerp speed for nose -> character
  let smiley;
-let heckImage;                 // This will hold the loaded image
-let numberOfHeckSprites = 10;  // Number of sprite instances
+let heckImage;                 // This will hold the loaded image  // Number of sprite instances
 let heckSprites = [];
+let numberOfHeckSprites = 10;
 
 
 // ==============================================
@@ -123,7 +123,7 @@ function preload() {
   
   // Load walk backward animation sequence (13 frames)
   walkBackAni = loadAni('animations/walkBack/walkAnimBack_1.png', 15);
-  
+
    heckImage = loadImage('assets/heck.png');
 }
 
@@ -193,7 +193,13 @@ yybyybbbyy
 	smiley.img = spriteArt(smileText, 32);
 
   
-
+  for (let i = 0; i < numberOfHeckSprites; i++) {
+    let s = new Sprite();
+    s.addImage(heckImage);
+    s.position.x = random(width);
+    s.position.y = random(height);
+    heckSprites.push(s);
+  }
 
 
 
@@ -273,15 +279,17 @@ function draw() {
     pop();
   }
 
-  // Check smiley collisions with character
-  for (let i = smiley.length - 1; i >= 0; i--) {
-    if (smiley[i].overlaps(character)) {
-      smiley[i].remove();
-      smiley.splice(i, 1);
-    }
+ 
+  for (let i = heckSprites.length - 1; i >= 0; i--) {
+  if (heckSprites[i].overlaps(character)) {
+    heckSprites[i].remove();    // Remove from canvas and memory
+    heckSprites.splice(i, 1);    // Remove from array to avoid further checks
   }
+}
+
   
   // Step 7: Draw perspective lines and visual elements
+  drawSprites();
   drawPerspective();
   
   // Step 8: Draw UI information
