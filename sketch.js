@@ -106,7 +106,7 @@ let noseX = null, noseY = null;     // Smoothed nose coordinates in canvas space
 let noseSmoothing = 0.12; 
          // 0..1 lerp speed for nose -> character
  let smiley;
-let heckImage;                 // This will hold the loaded image  // Number of sprite instances
+let heckSprite;                 // This will hold the loaded image  // Number of sprite instances
 let heckSprites = [];
 let numberOfHeckSprites = 10;
 
@@ -124,7 +124,7 @@ function preload() {
   // Load walk backward animation sequence (13 frames)
   walkBackAni = loadAni('animations/walkBack/walkAnimBack_1.png', 15);
 
-   heckImage = loadImage('assets/heck.png');
+   heckSprite = loadSprite('assets/heck.png');
 }
 
 // ==============================================
@@ -192,6 +192,12 @@ yybyybbbyy
 	smiley = new Sprite();
 	smiley.img = spriteArt(smileText, 32);
 
+let heckSprites = {
+  minX: 50,
+  maxX: 350,
+  minY: 200,
+  maxY: 600,
+};
   
   for (let i = 0; i < numberOfHeckSprites; i++) {
     let s = new Sprite();
