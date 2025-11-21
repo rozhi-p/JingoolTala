@@ -107,6 +107,8 @@ let noseSmoothing = 0.12;
          // 0..1 lerp speed for nose -> character
  let smiley;
 //let logo;
+let star;
+let starImage;
 
 
 
@@ -122,6 +124,7 @@ function preload() {
   
   // Load walk backward animation sequence (13 frames)
   walkBackAni = loadAni('animations/walkBack/walkAnimBack_1.png', 15);
+    starImage = loadImage('assets/star.webp');
 
   // let logo = loadImage('assets/heck.png');
 }
@@ -197,7 +200,8 @@ yybyybbbyy
   //image(logo, 0, 0, 200, 200);
 
 
-
+ star = new Sprite(width / 2, height / 2);
+  star.addImage(starImage);
   
 }
 
@@ -282,7 +286,11 @@ function draw() {
   }
 }*/
 
-  
+  let v = cos(frameCount * 0.05) * 0.5 + 0.5;  // oscillates between 0 and 1
+  star.opacity = v;
+  star.scale = v;
+
+  drawSprites();
   // Step 7: Draw perspective lines and visual elements
 
   drawPerspective();
