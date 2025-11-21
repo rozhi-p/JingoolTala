@@ -180,7 +180,7 @@ function setup() {
 ..yyyyyy
 .yybyybyy
 yyyyyyyyyy
-yybyyyybyy
+yybyybbbyy
 .yybbbbyy
 ..yyyyyy`;
 
