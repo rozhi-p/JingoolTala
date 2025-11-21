@@ -508,7 +508,6 @@ function updateDepthScale() {
 function drawPerspective() {
   // Start drawing context with semi-transparent white lines
   push();
-  baackground-image("bong.jpg")
   stroke(255, 150);  // White with 150 alpha (semi-transparent)
   strokeWeight(2);
 
