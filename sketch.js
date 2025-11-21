@@ -106,12 +106,13 @@ let noseX = null, noseY = null;     // Smoothed nose coordinates in canvas space
 let noseSmoothing = 0.12; 
          // 0..1 lerp speed for nose -> character
  let smiley;
+ let shapeShifterAni;
 //let logo;
 //let star;
 //let starImage;
-let beckImage;
+/*let beckImage;
 let beckX, beckY;
-let beckVisible = true;
+let beckVisible = true;*/
 
 // ==============================================
 // PRELOAD - Load animations before setup
@@ -126,13 +127,20 @@ function preload() {
   // Load walk backward animation sequence (13 frames)
   walkBackAni = loadAni('animations/walkBack/walkAnimBack_1.png', 15);
 
-  beckImage = loadImage('assets/beck.png'); 
+ // beckImage = loadImage('assets/beck.png'); 
     //starImage = loadImage('assets/star.webp');
 
   // let logo = loadImage('assets/heck.png');
+   	shapeShifterAni = loadAni(
+		'assets/asterisk.webp',
+		'assets/mess.webp',
+		'assets/cloud.webp',
+		'assets/triangle.webp',
+		'assets/star.webp'
+	);
 
+	shapeShifterAni.frameDelay = 20;
 }
-
 // ==============================================
 // SETUP - Initialize everything once
 // ==============================================
@@ -200,20 +208,7 @@ yybyybbbyy
 	smiley = new Sprite();
 	smiley.img = spriteArt(smileText, 32);
 
- 
-
-
-    ////tint(255, 0, 0, 128);
-  //image(logo, 0, 0, 200, 200);
-
-
-// star = new Sprite(width / 2, height / 2);
-  //star.addImage(starImage);
- 
-  
-  
-}
-
+ }
 
 function gotFaces(results) {
   faces = results;
@@ -301,7 +296,7 @@ function draw() {
 
 
   // Step 7: Draw perspective lines and visual elements
-    if (beckVisible &&
+  /*  if (beckVisible &&
       character.position.x + character.width / 2 > beckX &&
       character.position.x - character.width / 2 < beckX + beckImage.width &&
       character.position.y + character.height / 2 > beckY &&
@@ -312,10 +307,11 @@ function draw() {
   // Draw heck image if visible
   if (beckVisible) {
     image(beckImage, beckX, beckY);
-  }
+  }*/
 
   //drawSprites();
-
+   animation(shapeShifterAni, width/2, height/2);
+   
   drawPerspective();
   
   // Step 8: Draw UI information
