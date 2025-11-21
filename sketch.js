@@ -105,9 +105,9 @@ let NOSE_CONTROL_ENABLED = true;    // Set to false to disable nose-driven movem
 let noseX = null, noseY = null;     // Smoothed nose coordinates in canvas space
 let noseSmoothing = 0.12; 
          // 0..1 lerp speed for nose -> character
- let lilos = [];
-let numLilos = 10;
-let smileText ;
+ let smileys = [];
+let numSmileys = 10;
+
 
 // ==============================================
 // PRELOAD - Load animations before setup
@@ -121,8 +121,6 @@ function preload() {
   
   // Load walk backward animation sequence (13 frames)
   walkBackAni = loadAni('animations/walkBack/walkAnimBack_1.png', 15);
-
-
 }
 
 // ==============================================
@@ -179,21 +177,28 @@ function setup() {
   });
 
   // Initialize smiley sprites
+  let smileText = `
+..yyyyyy
+.yybyybyy
+yyyyyyyyyy
+yybyyyybyy
+.yybbbbyy
+..yyyyyy`;
 
-let lilosZone = {
+let smileyZone = {
   minX: 50,
   maxX: 350,
   minY: 200,
   maxY: 600,
 };
- for (let i = 0; i < numLilos; i++) {
-  let s = new Sprite();
-  s.image = '';  // <-- This is empty, so the sprite has no visual image and won't show up
-  s.position.x = random(lilosZone.minX, lilosZone.maxX);
-  s.position.y = random(lilosZone.minY, lilosZone.maxY);
+  for (let i = 0; i < numSmileys; i++) {
+    let s = new Sprite();
+    s.img = spriteArt(smileText, 12);
+    s.position.x = random(smileyZone.minX, smileyZone.maxX);
+    s.position.y = random(smileyZone.minY, smileyZone.maxY);
 
-  lilos.push(s);
-}
+    smileys.push(s);
+  }
 
   
 }
@@ -272,10 +277,10 @@ function draw() {
   }
 
   // Check smiley collisions with character
-  for (let i = lilos.length - 1; i >= 0; i--) {
-    if (lilos[i].overlaps(character)) {
-      lilos[i].remove();
-      lilos.splice(i, 1);
+  for (let i = smileys.length - 1; i >= 0; i--) {
+    if (smileys[i].overlaps(character)) {
+      smileys[i].remove();
+      smileys.splice(i, 1);
     }
   }
   
