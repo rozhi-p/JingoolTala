@@ -106,9 +106,8 @@ let noseX = null, noseY = null;     // Smoothed nose coordinates in canvas space
 let noseSmoothing = 0.12; 
          // 0..1 lerp speed for nose -> character
  let smiley;
-let heckSprite;                 // This will hold the loaded image  // Number of sprite instances
-let heckSprites = [];
-let numberOfHeckSprites = 10;
+let heck, floor;
+
 
 
 // ==============================================
@@ -192,20 +191,19 @@ yybyybbbyy
 	smiley = new Sprite();
 	smiley.img = spriteArt(smileText, 32);
 
-let heckSprites = {
-  minX: 50,
-  maxX: 350,
-  minY: 200,
-  maxY: 600,
-};
+
+
+	heck = new Sprite();
   
-  for (let i = 0; i < numberOfHeckSprites; i++) {
-    let s = new Sprite();
-    s.addImage(heckImage);
-    s.position.x = random(width);
-    s.position.y = random(height);
-    heckSprites.push(s);
-  }
+    heck.image= "heck.pnj";
+heck.diameter = 50;
+	heck.y = 30;
+
+	floor = new Sprite();
+	floor.y = 190;
+	floor.w = 238;
+	floor.h = 5;
+	floor.physics = STATIC;
 
 
 
@@ -286,12 +284,12 @@ function draw() {
   }
 
  
-  for (let i = heckSprites.length - 1; i >= 0; i--) {
+  /*for (let i = heckSprites.length - 1; i >= 0; i--) {
   if (heckSprites[i].overlaps(character)) {
     heckSprites[i].remove();    // Remove from canvas and memory
     heckSprites.splice(i, 1);    // Remove from array to avoid further checks
   }
-}
+}*/
 
   
   // Step 7: Draw perspective lines and visual elements
