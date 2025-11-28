@@ -50,6 +50,7 @@ LIBRARIES REQUIRED:
 // GLOBAL VARIABLES
 // ==============================================
 
+let currentScene = 1;       // Track current scene (1 or 2)
 // Sprite and Animations
 let character;               // The animated sprite object
 let idleAni;                 // Idle animation (breathing, stationary)
@@ -112,6 +113,36 @@ let beckSize = 200;  // Reduced from 500 so it's not too big
 let beckX, beckY;
 let beckVisible = true;
 
+let reckImage;
+let reckSize = 200;  // Reduced from 500 so it's not too big
+let reckX, reckY;
+let reckVisible = true;
+
+let leckImage;
+let leckSize = 200;  // Reduced from 500 so it's not too big
+let leckX, leckY;
+let leckVisible = true;
+
+let jeckImage;
+let jeckSize = 200;  // Reduced from 500 so it's not too big
+let jeckX, jeckY;
+let jeckVisible = true;
+
+let vid;                     // Video capture for scene 2
+let w = 64;                  // Video width
+let h = 48;                  // Video height
+let scl = 10;   
+
+let headImage;
+let collectibles = [];
+let collectedCount = 0;
+let totalCollectibles = 6; 
+let scene2Timer= 30;
+let scene2StartTime= 0;
+let player;                  // Player sprite for collection
+let pixelationVisible = true; // Controls pixelation visibility
+let allCollected = false;
+
 
 // ==============================================
 // PRELOAD - Load animations before setup
@@ -127,6 +158,10 @@ function preload() {
   walkBackAni = loadAni('animations/walkBack/walkAnimBack_1.png', 15);
 
   beckImage = loadImage('assets/beck.png'); 
+  reckImage = loadImage('assets/reck.png'); 
+   leckImage = loadImage('assets/leck.png'); 
+  jeckImage = loadImage('assets/jeck.png'); 
+  headImage = loadImage('assets/head.png');
   
 }
 // ==============================================
@@ -141,7 +176,19 @@ function setup() {
  
   beckX = width / 2;
   beckY = height / 2;
-  maxY = height - 150;
+
+
+ reckX = width * 0.25;     // 25% from left (101.25)
+reckY = height * 0.8;
+
+  leckX= width * 0.75;  
+  leckY = height * 0.65; 
+ 
+   jeckX = width * 0.2;   // 20% from left
+  jeckY= height * 0.9;
+
+  
+  
   
   // Set bottom boundary (character's closest position)
   maxY = height - 150;
@@ -198,20 +245,72 @@ yybyybbbyy
 	smiley = new Sprite();
 	smiley.img = spriteArt(smileText, 32);
 
- }
+  
 
- 
+ vid = createCapture(VIDEO);
+  vid.size(w, h);
+  vid.hide();
 
+ player = new Sprite();
+  player.diameter = 40;
+  player.visible = false;
+}
 function gotFaces(results) {
   faces = results;
 }
 
+function checkSceneTransition() {
+  if (currentScene === 1) {
+    if (character.scale < 0.2 && character.y < minY + 50) {
+      let distFromCenter = abs(character.x - width / 2);
+      if (distFromCenter < 80) {
+        currentScene = 2;
+        console.log("Scene changed!");
+      }
+    }
+  }
+}
+
+function initializeScene2() {
+  // Reset scene 2 variables
+  collectibles = [];
+  collectedCount = 0;
+  allCollected = false;
+  pixelationVisible = true;
+  player.visible = true;
+  
+  // Spawn 6 collectibles at random positions
+  for (let i = 0; i < totalCollectibles; i++) {
+    let collectible = {
+      x: random(50, width - 50),
+      y: random(50, height - 50),
+      size: 60, // Small defined size
+      collected: false
+    };
+    collectibles.push(collectible);
+  }
+}
+
+function resetScene2() {
+  scene2StartTime = millis();
+  initializeScene2();
+  console.log("Scene 2 reset!");
+}
 // ==============================================
 // DRAW - Main game loop (runs continuously at 60fps)
 // ==============================================
 function draw() {
-  // Clear background with sky blue color
+  if (currentScene === 1) {
+    drawScene1();
+  } else if (currentScene === 2) {
+    drawScene2();
+  }
+}
+
+function drawScene1() {
   background(100, 150, 200);
+  // Clear background with sky blue color
+
   
   // Check if microphone is enabled (user has granted microphone permission)
   if (mic && mic.enabled) {
@@ -276,24 +375,138 @@ function draw() {
 
   // Draw beck.png in the center of the screen
     if (beckVisible && beckImage) {
-    let d = dist(character.x, character.y, width / 2, height / 2);
+    let d = dist(character.x, character.y, beckX, beckY);
 
     if (d < beckSize / 2) {
       beckVisible = false;
       console.log("Collision with beck!");
     } else {
       imageMode(CENTER);
-      image(beckImage, width / 2, height / 2, beckSize, beckSize);
+      image(beckImage, beckX, beckY, beckSize, beckSize);
       imageMode(CORNER);
     }
   }
-  drawPerspective();
-  
-  // Step 8: Draw UI information
-  drawUI();
-}
+    if (reckVisible && reckImage) {
+    let d = dist(character.x, character.y, reckX, reckY);
 
-function drawFaceTracking() {
+    if (d < reckSize / 2) {
+      reckVisible = false;
+      console.log("Collision with reck!");
+    } else {
+      imageMode(CENTER);
+      image(reckImage, reckX, reckY, reckSize, reckSize);
+      imageMode(CORNER);
+    }
+
+    }
+
+     if (leckVisible && leckImage) {
+    let d = dist(character.x, character.y, leckX, leckY);
+
+    if (d < leckSize / 2) {
+      leckVisible = false;
+      console.log("Collision with reck!");
+    } else {
+      imageMode(CENTER);
+      image(leckImage, leckX, leckY, leckSize, leckSize);
+      imageMode(CORNER);
+    }
+
+  }
+
+     if (jeckVisible && jeckImage) {
+    let d = dist(character.x, character.y, jeckX, jeckY);
+
+    if (d < jeckSize / 2) {
+      jeckVisible = false;
+      console.log("Collision with reck!");
+    } else {
+      imageMode(CENTER);
+      image(jeckImage, jeckX, jeckY, jeckSize, jeckSize);
+      imageMode(CORNER);
+    }
+
+    }
+
+  drawPerspective();
+  checkSceneTransition();
+
+
+
+ 
+  // Step 8: Draw UI information
+ drawUI();
+}
+  function drawScene2() {
+  background(220);
+
+
+ player.x = mouseX;
+  player.y = mouseY;
+  
+  // Calculate remaining time
+  let elapsedTime = (millis() - scene2StartTime) / 1000;
+  let timeRemaining = scene2Timer - elapsedTime;
+  
+  // Check if time ran out
+  if (timeRemaining <= 0 && !allCollected) {
+    resetScene2();
+    return;
+  }
+
+  if (pixelationVisible) {
+    vid.loadPixels();
+    for (let i = 0; i < vid.width; i++) {
+      for (let j = 0; j < vid.height; j++) {
+        let index = ((j * vid.width) + i) * 4;
+        let r = vid.pixels[index + 0];
+        let g = vid.pixels[index + 1];
+        let b = vid.pixels[index + 2];
+        
+        let c = (r + g + b) / 3;
+        let s = map(c, 0, 100, 0, 20);
+        fill(c);
+        
+        ellipse(scl/2 + i*scl, scl/2 + j*scl, s, s);
+      }
+    }
+  }
+for (let collectible of collectibles) {
+    if (!collectible.collected) {
+      imageMode(CENTER);
+      image(headImage, collectible.x, collectible.y, collectible.size, collectible.size);
+      
+      // Check collision with player
+      let d = dist(player.x, player.y, collectible.x, collectible.y);
+      if (d < collectible.size / 2 + player.diameter / 2) {
+        collectible.collected = true;
+        collectedCount++;
+        console.log("Collected! Total: " + collectedCount);
+        
+        // Check if all collected
+        if (collectedCount >= totalCollectibles) {
+          allCollected = true;
+          pixelationVisible = false; // Hide pixelation
+          console.log("All collected! Pixelation removed!");
+        }
+      }
+    }
+  }
+
+push();
+  fill(0);
+  textSize(24);
+  textAlign(CENTER);
+  text("Time: " + Math.ceil(timeRemaining) + "s", width/2, 40);
+  text("Collected: " + collectedCount + "/" + totalCollectibles, width/2, 70);
+  
+  if (allCollected) {
+    fill(0, 255, 0);
+    text("ALL COLLECTED!", width/2, height/2);
+  }
+  pop();
+}
+  function drawFaceTracking() {
   let face = faces[0];  // Ge
  if (!face.keypoints || face.keypoints.length === 0) return;
   
