@@ -1,10 +1,18 @@
-
-
 // ==============================================
 // GLOBAL VARIABLES
 // ==============================================
+let currentScene = 1;       // Track current scene (1, 2, 3 or 4)
+let scene3BGColor;          // Random color for scene 3 background
+// Whether Scene 3 should draw a colorful background (rounds 1-2)
+let scene3UseColor = true;
 
-let currentScene = 1;       // Track current scene (1 or 2)
+// ROUND / TIMER SYSTEM
+let currentRound = 1;                     // Which round the player is on (1..3)
+
+// Success display when finishing a round (show Scene3 with a button to continue)
+let isShowingSuccess = false;
+let successDisplayStart = 0;
+let successDisplayDuration = 1800; // ms to show Scene 3 before next round (no longer used for auto-advance)
 // Sprite and Animations
 let character;               // The animated sprite object
 let idleAni;                 // Idle animation (breathing, stationary)
@@ -66,36 +74,340 @@ let beckImage;
 let beckSize = 200;  // Reduced from 500 so it's not too big
 let beckX, beckY;
 let beckVisible = true;
+let beck2X, beck2Y;
+let beck2Visible = true;
 
 let reckImage;
 let reckSize = 200;  // Reduced from 500 so it's not too big
 let reckX, reckY;
 let reckVisible = true;
+let reck2X, reck2Y;
+let reck2Visible = true;
 
 let leckImage;
 let leckSize = 200;  // Reduced from 500 so it's not too big
 let leckX, leckY;
 let leckVisible = true;
+let leck2X, leck2Y;
+let leck2Visible = true;
 
 let jeckImage;
 let jeckSize = 200;  // Reduced from 500 so it's not too big
 let jeckX, jeckY;
 let jeckVisible = true;
+let jeck2X, jeck2Y;
+let jeck2Visible = true;
+
+
+// per-scene timers removed
+let totalCollectibles = 8;   // Total items to collect (each of the four appears twice)
+let collectedItems = 0;
 
 let vid;                     // Video capture for scene 2
 let w = 64;                  // Video width
 let h = 48;                  // Video height
 let scl = 10;   
 
-let headImage;
-let collectibles = [];
-let collectedCount = 0;
-let totalCollectibles = 6; 
-let scene2Timer= 30;
-let scene2StartTime= 0;
-let player;                  // Player sprite for collection
-let pixelationVisible = true; // Controls pixelation visibility
-let allCollected = false;
+let interactiveCircle; 
+
+// Scene 2 image pool and selection (four unique per round)
+let scene2Pool = [];        // p5.Image or graphics placeholders
+let scene2Selected = [];    // selected images for current round (length 4)
+
+// Per-round Scene 2 image lists (will be filled in setup() from preload())
+let scene2Rounds = [];
+let drImage;
+let dreImage;
+let drsImage;
+let drtImage;
+
+
+let dlImage;
+let dpeImage;
+let dtoiImage;
+let kioImage;
+
+let kinoiImage;
+let kinosImage;
+let kinotaImage;
+let kinvaImage;
+
+// Stage images (will be set per-round by applyStageImagesForRound)
+let infantImage;
+let childImage;
+let adultImage;
+let elderImage;
+
+function applyStageImagesForRound(roundNumber) {
+  // Map per-round asset variables to the stage images
+  if (!roundNumber) roundNumber = currentRound;
+  if (roundNumber === 1) {
+    infantImage = drImage || infantImage;
+    childImage  = dreImage || childImage;
+    adultImage  = drsImage || adultImage;
+    elderImage  = drtImage || elderImage;
+  } else if (roundNumber === 2) {
+    infantImage = dlImage || infantImage;
+    childImage  = dpeImage || childImage;
+    adultImage  = dtoiImage || adultImage;
+    elderImage  = kioImage || elderImage;
+  } else if (roundNumber === 3) {
+    infantImage = kinoiImage || infantImage;
+    childImage  = kinosImage || childImage;
+    adultImage  = kinotaImage || adultImage;
+    elderImage  = kinvaImage || elderImage;
+  }
+}
+
+let backgroundImage;
+
+class InteractiveCircle {
+  constructor(x, y, radius) {
+    this.x = x;
+    this.y = y;
+    this.baseRadius = radius;
+    this.currentRadius = radius;
+    this.targetRadius = radius;
+    
+    // MEMORY: Track interaction history
+    this.totalTouches = 0;           // Total touches over lifetime
+    this.touchesThisStage = 0;       // Touches in current life stage
+    this.lastTouchTime = 0;          // When last touched
+    this.birthTime = millis();       // When circle was created
+    
+    // EVOLUTION: Life stages
+    this.stage = 'infant';           // Current life stage
+    this.stageProgress = 0;          // Progress through current stage (0-100)
+    this.touchesNeeded = 10;         // Touches needed to evolve
+    
+    // PERSONALITY: Changes with stage
+    this.resistance = 0.5;           // How much it resists touch (0=no resistance, 1=full resistance)
+    this.growthRate = 1.0;           // How much it grows per touch
+    this.decayRate = 0.1;            // How fast it shrinks when ignored
+    this.excitability = 1.0;         // How responsive to touch
+    
+    // ALIVENESS: Continuous animation
+    this.pulsePhase = 0;
+    this.pulseSpeed = 0.05;
+    
+    // VISUAL: Color and effects
+    this.hue = 180;
+    this.particles = [];
+  }
+  
+  // Check if touch is inside circle
+  contains(tx, ty) {
+    let d = dist(tx, ty, this.x, this.y);
+    return d < this.currentRadius;
+  }
+  
+  // Respond to touch - behavior changes based on stage
+  onTouch() {
+    // If Elder stage, trigger round completion / Scene 3
+    if (this.stage === 'elder') {
+      // Set Scene 3 background behavior per round:
+      // Round 1 -> red background
+      // Round 2 -> blue background
+      // Round 3 -> no colorful background (video only)
+      if (currentRound === 1) {
+        scene3UseColor = true;
+        scene3BGColor = color(255, 0, 0);
+      } else if (currentRound === 2) {
+        scene3UseColor = true;
+        scene3BGColor = color(0, 0, 255);
+      } else {
+        scene3UseColor = false;
+      }
+
+      // Proceed to Scene 3. For rounds 1-2 show the brief success display,
+      // for round 3 go directly to face-tracking with no colored background.
+      currentScene = 3;
+      if (currentRound < 3) {
+        isShowingSuccess = true;
+        successDisplayStart = millis();
+      } else {
+        isShowingSuccess = false;
+      }
+
+      return;
+    }
+    
+    this.totalTouches++;
+    this.touchesThisStage++;
+    this.lastTouchTime = millis();
+    
+    // RESISTANCE: Touch impact is reduced by resistance
+    // Higher resistance = less response
+    let touchImpact = (1 - this.resistance) * this.excitability;
+    
+    // Grow based on current personality
+    let growth = this.baseRadius * this.growthRate * touchImpact;
+    this.targetRadius += growth;
+    
+    // Constrain based on stage
+    let maxSize = this.getMaxSize();
+    this.targetRadius = constrain(this.targetRadius, this.baseRadius, maxSize);
+    
+    // Update stage progress
+    this.stageProgress = (this.touchesThisStage / this.touchesNeeded) * 100;
+    
+    // Check if ready to evolve to next stage
+    if (this.touchesThisStage >= this.touchesNeeded) {
+      this.evolve();
+    }
+    
+    // Create particles - fewer when resistant, more when excitable
+    let particleCount = floor(5 * touchImpact);
+    for (let i = 0; i < particleCount; i++) {
+      this.particles.push({
+        x: this.x,
+        y: this.y,
+        vx: random(-2, 2),
+        vy: random(-2, 2),
+        size: random(3, 10),
+        life: 40,
+        alpha: 100
+      });
+    }
+  }
+  
+  // EVOLUTION: Progress to next life stage
+  evolve() {
+    this.touchesThisStage = 0;
+    this.stageProgress = 0;
+    
+    // Change stage and update personality
+    if (this.stage === 'infant') {
+      this.stage = 'child';
+      this.touchesNeeded = 15;
+      this.resistance = 0.2;        // Low resistance, very responsive
+      this.growthRate = 1.5;        // Grows a lot
+      this.decayRate = 0.15;        // Shrinks quickly when ignored
+      this.excitability = 1.5;      // Very excitable
+      this.hue = 150;               // Green
+      
+    } else if (this.stage === 'child') {
+      this.stage = 'adult';
+      this.touchesNeeded = 25;
+      this.resistance = 0.5;        // Moderate resistance
+      this.growthRate = 0.8;        // Grows less
+      this.decayRate = 0.08;        // Shrinks slowly
+      this.excitability = 0.8;      // Less excitable
+      this.hue = 220;               // Blue
+      
+    } else if (this.stage === 'adult') {
+      this.stage = 'elder';
+      this.touchesNeeded = 999999;  // Cannot evolve further
+      this.resistance = 0.8;        // High resistance
+      this.growthRate = 0.3;        // Barely grows
+      this.decayRate = 0.05;        // Very stable
+      this.excitability = 0.4;      // Not very excitable
+      this.hue = 280;               // Purple
+    }
+  }
+  
+  // Get maximum size based on stage
+  getMaxSize() {
+    if (this.stage === 'infant') return this.baseRadius * 3;
+    if (this.stage === 'child') return this.baseRadius * 4;
+    if (this.stage === 'adult') return this.baseRadius * 5;
+    if (this.stage === 'elder') return this.baseRadius * 4;
+    return this.baseRadius * 3;
+  }
+  
+  // Update state every frame
+  update() {
+    // PERSONALITY: Shrink over time when not touched (decay)
+    let timeSinceTouch = millis() - this.lastTouchTime;
+    if (timeSinceTouch > 500) {
+      this.targetRadius -= this.decayRate;
+      this.targetRadius = max(this.targetRadius, this.baseRadius);
+    }
+    
+    // RESISTANCE: Smooth movement with inertia
+    // Higher resistance = slower response (more inertia)
+    let responseSpeed = 0.1 * (1 - this.resistance * 0.5);
+    this.currentRadius = lerp(this.currentRadius, this.targetRadius, responseSpeed);
+    
+    // ALIVENESS: Pulse animation
+    this.pulsePhase += this.pulseSpeed;
+    
+    // Update particles
+    for (let i = this.particles.length - 1; i >= 0; i--) {
+      let p = this.particles[i];
+      p.x += p.vx;
+      p.y += p.vy;
+      p.life -= 1;
+      p.alpha = map(p.life, 0, 40, 0, 100);
+      
+      if (p.life <= 0) {
+        this.particles.splice(i, 1);
+      }
+    }
+  }
+  
+  // Draw the circle
+  display() {
+   colorMode(HSB, 360, 100, 100);
+  
+  // Calculate visual properties based on stage
+  let pulseAmount = sin(this.pulsePhase) * 8;
+  let displayRadius = this.currentRadius + pulseAmount;
+  
+  // Select image based on stage
+  let currentImage;
+  if (this.stage === 'infant') currentImage = infantImage;
+  else if (this.stage === 'child') currentImage = childImage;
+  else if (this.stage === 'adult') currentImage = adultImage;
+  else if (this.stage === 'elder') currentImage = elderImage;
+  
+  // Draw the image instead of colored circle
+  if (currentImage) {
+    push();
+    imageMode(CENTER);
+    // Draw image with size based on radius
+    image(currentImage, this.x, this.y, displayRadius * 2, displayRadius * 2);
+    pop();
+  }
+  
+  // Draw evolution progress ring (same as before)
+  push();
+  noFill();
+  stroke(this.hue, 100, 90);
+  strokeWeight(5);
+  strokeCap(ROUND);
+  let progressAngle = map(this.stageProgress, 0, 100, 0, TWO_PI);
+  arc(this.x, this.y, displayRadius * 2.3, displayRadius * 2.3, -HALF_PI, -HALF_PI + progressAngle);
+  pop();
+  
+  // Draw particles (same as before)
+  for (let p of this.particles) {
+    fill(this.hue, 80, 100, p.alpha);
+    noStroke();
+    circle(p.x, p.y, p.size);
+  }
+  
+  // Draw stage indicator (same as before)
+  colorMode(RGB, 255);
+  fill(255);
+  noStroke();
+  textSize(12);
+  textAlign(CENTER, CENTER);
+  text(this.totalTouches, this.x, this.y);
+}
+  // Get stage info for display
+  getStageInfo() {
+    return {
+      name: this.stage.toUpperCase(),
+      touches: this.totalTouches,
+      progress: floor(this.stageProgress),
+      resistance: floor(this.resistance * 100),
+      excitability: floor(this.excitability * 100)
+    };
+  }
+}
+
+
 
 
 // ==============================================
@@ -115,7 +427,29 @@ function preload() {
   reckImage = loadImage('assets/reck.png'); 
    leckImage = loadImage('assets/leck.png'); 
   jeckImage = loadImage('assets/jeck.png'); 
-  headImage = loadImage('assets/head.png');
+
+  // Scene 2 / stage assets (per-round)
+  drImage = loadImage('assets/dr.png');
+  dreImage = loadImage('assets/dre.png');
+  drsImage = loadImage('assets/drs.png');
+  drtImage = loadImage('assets/drt.png');
+
+  dlImage = loadImage('assets/dl.png');
+  dpeImage = loadImage('assets/dpe.png');
+  dtoiImage = loadImage('assets/dtoi.png');
+  kioImage = loadImage('assets/kio.png');
+
+  kinoiImage = loadImage('assets/kinoi.png');
+  kinosImage = loadImage('assets/kinos.png');
+  kinotaImage = loadImage('assets/kinota.png');
+  kinvaImage = loadImage('assets/kinva.png');
+
+  
+
+  backgroundImage = loadImage('assets/hey.jpg');
+  // Scene 2 images (user-provided names wired here)
+
+ 
   
 }
 // ==============================================
@@ -179,22 +513,22 @@ reckY = height * 0.8;
       maxFaces: 1,           // Only detect 1 face (faster)
       refineLandmarks: false,// Skip detailed landmarks (faster)
       runtime: 'mediapipe',  // Use MediaPipe runtime (same as HandPose)
-      flipHorizontal: false  // Don't flip in ML5 - cam.mapKeypoint() handles mirroring
+      flipped: false         // Don't flip — keep head and skeleton in sync
     };
     
     facemesh = ml5.faceMesh(options, () => {
       facemesh.detectStart(cam.videoElement, gotFaces);
     });
   });
+  
+    // rounds are untimed now
 
   // Initialize smiley sprites
   	let smileText = `
-..yyyyyy
-.yybyybyy
-yyyyyyyyyy
-yybyybbbyy
-.yybbbbyy
-..yyyyyy`;
+..bbbbbb
+.bbbbbbbb
+bbbyyybbbb
+`;
 
 	smiley = new Sprite();
 	smiley.img = spriteArt(smileText, 32);
@@ -205,65 +539,240 @@ yybyybbbyy
   vid.size(w, h);
   vid.hide();
 
- player = new Sprite();
-  player.diameter = 40;
-  player.visible = false;
+   interactiveCircle = new InteractiveCircle(width / 2, height * 0.75, 50);
+
+  // no per-scene timer start required
+   
+   // Randomly position collectibles on perspective lines
+   randomizeCollectiblePositions();
+
+  // Build per-round Scene 2 image lists from the preloaded assets.
+  // Round 1: dr, dre, drs, drti
+  // Round 2: dl, dpe, dtoi, kio
+  // Round 3: kinoi, kinos, kinota, kinva
+  scene2Rounds = [
+    [drImage, dreImage, drsImage, drtImage],
+    [dlImage, dpeImage, dtoiImage, kioImage],
+    [kinoiImage, kinosImage, kinotaImage, kinvaImage]
+  ];
+
+  // Pick images for the starting round (uses per-round lists)
+  selectScene2Images();
+  // Apply stage images for round 1 initially
+  applyStageImagesForRound(currentRound);
+
 }
 function gotFaces(results) {
   faces = results;
 }
 
+// ==============================================
+// RANDOMIZE COLLECTIBLE POSITIONS
+// ==============================================
+/**
+ * Position each collectible (beck, reck, leck, jeck) randomly along the perspective lines.
+ * Each item is placed at a random depth (Y position between minY and maxY),
+ * and positioned horizontally on either the left or right perspective line.
+ */
+function randomizeCollectiblePositions() {
+  // Generate random positions for each collectible
+  
+  // BECK - Left line
+  let beckDepth = random(minY + 50, maxY - 50);  // Random Y position
+  let beckProgress = map(beckDepth, minY, maxY, 0, 1);  // 0 at top, 1 at bottom
+  beckX = lerp(width * 0.4, 0, beckProgress);  // Interpolate from right perspective point to left edge
+  beckY = beckDepth;
+  // Second beck
+  let beckDepth2 = random(minY + 50, maxY - 50);
+  let beckProgress2 = map(beckDepth2, minY, maxY, 0, 1);
+  beck2X = lerp(width * 0.4, 0, beckProgress2);
+  beck2Y = beckDepth2;
+  
+  // RECK - Right line
+  let reckDepth = random(minY + 50, maxY - 50);
+  let reckProgress = map(reckDepth, minY, maxY, 0, 1);
+  reckX = lerp(width * 0.6, width, reckProgress);  // Interpolate from left perspective point to right edge
+  reckY = reckDepth;
+  // Second reck
+  let reckDepth2 = random(minY + 50, maxY - 50);
+  let reckProgress2 = map(reckDepth2, minY, maxY, 0, 1);
+  reck2X = lerp(width * 0.6, width, reckProgress2);
+  reck2Y = reckDepth2;
+  
+  // LECK - Left line
+  let leckDepth = random(minY + 50, maxY - 50);
+  let leckProgress = map(leckDepth, minY, maxY, 0, 1);
+  leckX = lerp(width * 0.4, 0, leckProgress);
+  leckY = leckDepth;
+  // Second leck
+  let leckDepth2 = random(minY + 50, maxY - 50);
+  let leckProgress2 = map(leckDepth2, minY, maxY, 0, 1);
+  leck2X = lerp(width * 0.4, 0, leckProgress2);
+  leck2Y = leckDepth2;
+  
+  // JECK - Right line
+  let jeckDepth = random(minY + 50, maxY - 50);
+  let jeckProgress = map(jeckDepth, minY, maxY, 0, 1);
+  jeckX = lerp(width * 0.6, width, jeckProgress);
+  jeckY = jeckDepth;
+  // Second jeck
+  let jeckDepth2 = random(minY + 50, maxY - 50);
+  let jeckProgress2 = map(jeckDepth2, minY, maxY, 0, 1);
+  jeck2X = lerp(width * 0.6, width, jeckProgress2);
+  jeck2Y = jeckDepth2;
+}
+
 function checkSceneTransition() {
   if (currentScene === 1) {
+    // Only auto-transition to Scene 2 when the character reaches the exit
+    // AND the player has collected all required collectibles. The player
+    // can still use the Skip button to move to Scene 2 earlier.
     if (character.scale < 0.2 && character.y < minY + 50) {
       let distFromCenter = abs(character.x - width / 2);
-      if (distFromCenter < 80) {
+      if (distFromCenter < 40 && collectedItems >= totalCollectibles) {
         currentScene = 2;
-        console.log("Scene changed!");
+        console.log("Scene changed! all items collected");
       }
     }
   }
 }
-
-function initializeScene2() {
-  // Reset scene 2 variables
-  collectibles = [];
-  collectedCount = 0;
-  allCollected = false;
-  pixelationVisible = true;
-  player.visible = true;
+function resetScene1() {
+  // No per-scene timer to reset
   
-  // Spawn 6 collectibles at random positions
-  for (let i = 0; i < totalCollectibles; i++) {
-    let collectible = {
-      x: random(50, width - 50),
-      y: random(50, height - 50),
-      size: 60, // Small defined size
-      collected: false
-    };
-    collectibles.push(collectible);
+  // Reset all collectibles
+  beckVisible = true;
+  reckVisible = true;
+  leckVisible = true;
+  jeckVisible = true;
+  // Reset second copies
+  beck2Visible = true;
+  reck2Visible = true;
+  leck2Visible = true;
+  jeck2Visible = true;
+  collectedItems = 0;
+  
+  // Randomly position collectibles on perspective lines
+  randomizeCollectiblePositions();
+  
+  // Reset character position
+  character.x = width / 2;
+  character.y = maxY;
+  character.scale = maxScale;
+  
+  // Reset introversion
+  introversion = 100;
+  
+  console.log("Scene 1 reset!");
+}
+
+// Select 4 unique images from the pool for the current round
+function selectScene2Images() {
+  scene2Selected = [];
+
+  // Prefer explicit per-round lists when available
+  if (scene2Rounds && scene2Rounds.length >= currentRound) {
+    let arr = scene2Rounds[currentRound - 1];
+    if (arr && arr.length > 0) {
+      for (let i = 0; i < arr.length && i < 4; i++) {
+        scene2Selected.push(arr[i]);
+      }
+      return;
+    }
+  }
+
+  // Fallback to pool behavior (shuffle & pick 4)
+  if (scene2Pool.length === 0) return;
+  let indices = [];
+  for (let i = 0; i < scene2Pool.length; i++) indices.push(i);
+  indices = shuffle(indices);
+  let take = min(4, indices.length);
+  for (let i = 0; i < take; i++) {
+    scene2Selected.push(scene2Pool[indices[i]]);
   }
 }
 
-function resetScene2() {
-  scene2StartTime = millis();
-  initializeScene2();
-  console.log("Scene 2 reset!");
-}
 // ==============================================
 // DRAW - Main game loop (runs continuously at 60fps)
 // ==============================================
 function draw() {
+  // Rounds are untimed now - no elapsed/timeRemaining computation or timeout handling
+
+  // Render current scene
   if (currentScene === 1) {
     drawScene1();
   } else if (currentScene === 2) {
     drawScene2();
+  } else if (currentScene === 3) {
+    drawScene3();
+  } else if (currentScene === 4) {
+    drawScene4();
   }
+
+  // If we're showing the brief success display, user must press Continue button
+  // (no automatic advance anymore for rounds 1-2)
+  if (isShowingSuccess) {
+    // Button will be drawn in drawScene3UI(), user clicks it to proceed
+    // No automatic timeout — waiting for button press
+  }
+
+  // Draw round overlay (no timer)
+  push();
+  fill(255);
+  textSize(18);
+  textAlign(CENTER);
+  text('Round ' + currentRound, width / 2, 22);
+  pop();
 }
 
 function drawScene1() {
-  background(100, 150, 200);
-  // Clear background with sky blue color
+
+  character.visible = true;
+  smiley.visible = true;
+
+  
+  // Draw background image (if loaded)
+  if (backgroundImage) {
+    image(backgroundImage, 0, 0, width, height);
+  } else {
+    // fallback clear color while image loads or if missing
+    background(100, 150, 200);
+  }
+  
+  // Draw collectibles UI
+  push();
+  fill(255);
+  textSize(20);
+  textAlign(CENTER);
+  text("Collected: " + collectedItems + "/" + totalCollectibles, width / 2, 30);
+  pop();
+
+  // Instructional text for Scene 1 (user requested)
+  push();
+  textAlign(CENTER, CENTER);
+  fill(0);
+  textSize(20);
+  // Split into two shorter lines so it fits on most screens
+  text("you have to get me", width / 2, height * 0.22);
+  text("to see yourself", width / 2, height * 0.28);
+  pop();
+
+  // Draw Skip button (top-right) to allow moving to Scene 2 without collecting all items
+  push();
+  rectMode(CENTER);
+  fill(80, 120, 255);
+  stroke(0);
+  strokeWeight(2);
+  let skipX = width - 50;
+  let skipY = 30;
+  let skipW = 80;
+  let skipH = 36;
+  rect(skipX, skipY, skipW, skipH, 6);
+  fill(255);
+  noStroke();
+  textSize(14);
+  textAlign(CENTER, CENTER);
+  text('Skip', skipX, skipY);
+  pop();
 
   
   // Check if microphone is enabled (user has granted microphone permission)
@@ -332,20 +841,35 @@ function drawScene1() {
     let d = dist(character.x, character.y, beckX, beckY);
 
     if (d < beckSize / 2) {
-      beckVisible = false;
-      console.log("Collision with beck!");
+        beckVisible = false;
+        collectedItems++;
+        console.log("Collision with beck! Collected:", collectedItems);
     } else {
       imageMode(CENTER);
       image(beckImage, beckX, beckY, beckSize, beckSize);
       imageMode(CORNER);
     }
   }
+    // Second BECK
+    if (beck2Visible && beckImage) {
+      let d2 = dist(character.x, character.y, beck2X, beck2Y);
+      if (d2 < beckSize / 2) {
+        beck2Visible = false;
+        collectedItems++;
+        console.log("Collision with beck2! Collected:", collectedItems);
+      } else {
+        imageMode(CENTER);
+        image(beckImage, beck2X, beck2Y, beckSize, beckSize);
+        imageMode(CORNER);
+      }
+    }
     if (reckVisible && reckImage) {
     let d = dist(character.x, character.y, reckX, reckY);
 
     if (d < reckSize / 2) {
       reckVisible = false;
-      console.log("Collision with reck!");
+      collectedItems++;
+      console.log("Collision with reck! Collected:", collectedItems);
     } else {
       imageMode(CENTER);
       image(reckImage, reckX, reckY, reckSize, reckSize);
@@ -353,13 +877,27 @@ function drawScene1() {
     }
 
     }
+    // Second RECK
+    if (reck2Visible && reckImage) {
+      let d2 = dist(character.x, character.y, reck2X, reck2Y);
+      if (d2 < reckSize / 2) {
+        reck2Visible = false;
+        collectedItems++;
+        console.log("Collision with reck2! Collected:", collectedItems);
+      } else {
+        imageMode(CENTER);
+        image(reckImage, reck2X, reck2Y, reckSize, reckSize);
+        imageMode(CORNER);
+      }
+    }
 
      if (leckVisible && leckImage) {
     let d = dist(character.x, character.y, leckX, leckY);
 
     if (d < leckSize / 2) {
       leckVisible = false;
-      console.log("Collision with reck!");
+      collectedItems++;
+      console.log("Collision with leck! Collected:", collectedItems);
     } else {
       imageMode(CENTER);
       image(leckImage, leckX, leckY, leckSize, leckSize);
@@ -367,19 +905,46 @@ function drawScene1() {
     }
 
   }
+  // Second LECK
+  if (leck2Visible && leckImage) {
+    let d2 = dist(character.x, character.y, leck2X, leck2Y);
+    if (d2 < leckSize / 2) {
+      leck2Visible = false;
+      collectedItems++;
+      console.log("Collision with leck2! Collected:", collectedItems);
+    } else {
+      imageMode(CENTER);
+      image(leckImage, leck2X, leck2Y, leckSize, leckSize);
+      imageMode(CORNER);
+    }
+  }
 
      if (jeckVisible && jeckImage) {
     let d = dist(character.x, character.y, jeckX, jeckY);
 
     if (d < jeckSize / 2) {
       jeckVisible = false;
-      console.log("Collision with reck!");
+      collectedItems++;
+      console.log("Collision with jeck! Collected:", collectedItems);
     } else {
       imageMode(CENTER);
       image(jeckImage, jeckX, jeckY, jeckSize, jeckSize);
       imageMode(CORNER);
     }
 
+    }
+    // Second JECK
+    if (jeck2Visible && jeckImage) {
+      let d2 = dist(character.x, character.y, jeck2X, jeck2Y);
+      if (d2 < jeckSize / 2) {
+        jeck2Visible = false;
+        collectedItems++;
+        console.log("Collision with jeck2! Collected:", collectedItems);
+      } else {
+        imageMode(CENTER);
+        image(jeckImage, jeck2X, jeck2Y, jeckSize, jeckSize);
+        imageMode(CORNER);
+      }
     }
 
   drawPerspective();
@@ -392,74 +957,264 @@ function drawScene1() {
  drawUI();
 }
   function drawScene2() {
+    character.visible = false;
+  smiley.visible = false;
   background(220);
-
-
- player.x = mouseX;
-  player.y = mouseY;
+ 
+  vid.loadPixels();
   
-  // Calculate remaining time
-  let elapsedTime = (millis() - scene2StartTime) / 1000;
-  let timeRemaining = scene2Timer - elapsedTime;
-  
-  // Check if time ran out
-  if (timeRemaining <= 0 && !allCollected) {
-    resetScene2();
-    return;
-  }
-
-  if (pixelationVisible) {
-    vid.loadPixels();
-    for (let i = 0; i < vid.width; i++) {
-      for (let j = 0; j < vid.height; j++) {
-        let index = ((j * vid.width) + i) * 4;
-        let r = vid.pixels[index + 0];
-        let g = vid.pixels[index + 1];
-        let b = vid.pixels[index + 2];
-        
-        let c = (r + g + b) / 3;
-        let s = map(c, 0, 100, 0, 20);
-        fill(c);
-        
-        ellipse(scl/2 + i*scl, scl/2 + j*scl, s, s);
-      }
-    }
-  }
-for (let collectible of collectibles) {
-    if (!collectible.collected) {
-      imageMode(CENTER);
-      image(headImage, collectible.x, collectible.y, collectible.size, collectible.size);
+  for (let i = 0; i < vid.width; i++) {
+    for (let j = 0; j < vid.height; j++) {
+      let index = ((j * vid.width) + i) * 4;
+      let r = vid.pixels[index + 0];
+      let g = vid.pixels[index + 1];
+      let b = vid.pixels[index + 2];
       
-      // Check collision with player
-      let d = dist(player.x, player.y, collectible.x, collectible.y);
-      if (d < collectible.size / 2 + player.diameter / 2) {
-        collectible.collected = true;
-        collectedCount++;
-        console.log("Collected! Total: " + collectedCount);
-        
-        // Check if all collected
-        if (collectedCount >= totalCollectibles) {
-          allCollected = true;
-          pixelationVisible = false; // Hide pixelation
-          console.log("All collected! Pixelation removed!");
-        }
+      let c = (r + g + b) / 3;
+      let s = map(c, 0, 100, 0, 20);
+      fill(c);
+      
+    ellipse(scl/2 + i*scl, scl/2 + j*scl, s, s);
+    }
+  }
+  // no push() was used above, so remove stray pop()
+  
+  // Draw dividing line
+  stroke(80);
+  strokeWeight(2);
+  line(0, height / 2, width, height / 2);
+  
+  // Update and display interactive circle in lower half
+  interactiveCircle.update();
+  interactiveCircle.display();
+  
+  // Draw stage information
+  drawScene2UI();
+
+  // Draw selected images for this round (4 images)
+  if (scene2Selected && scene2Selected.length > 0) {
+    let imgSize = 100;
+    let positions = [width * 0.18, width * 0.38, width * 0.62, width * 0.82];
+    let y = height * 0.65;
+    for (let i = 0; i < scene2Selected.length; i++) {
+      let img = scene2Selected[i];
+      if (img) {
+        imageMode(CENTER);
+        image(img, positions[i], y, imgSize, imgSize);
+        imageMode(CORNER);
       }
     }
   }
+}
 
-push();
-  fill(0);
-  textSize(24);
-  textAlign(CENTER);
-  text("Time: " + Math.ceil(timeRemaining) + "s", width/2, 40);
-  text("Collected: " + collectedCount + "/" + totalCollectibles, width/2, 70);
+function drawScene2UI() {
+  let info = interactiveCircle.getStageInfo();
   
-  if (allCollected) {
-    fill(0, 255, 0);
-    text("ALL COLLECTED!", width/2, height/2);
+  colorMode(RGB, 255);
+  fill(0);
+  noStroke();
+  textSize(14);
+  textAlign(CENTER);
+  
+  text("Touch circle to grow and evolve", width / 2, height / 2 + 30);
+
+  // Additional instructional text requested by the user for Scene 2
+  push();
+  textSize(13);
+  fill(0);
+  textAlign(CENTER);
+  // Nudge these lines way higher, closer to the round indicator at top
+  text("i have different options,", width / 2, 50);
+  // Break the long sentence into two lines so it wraps cleanly
+  text("you still need to see different versions", width / 2, 70);
+  text("of my skeleton then see yourself,", width / 2, 90);
+  text("keep taping on me.", width / 2, 110);
+  pop();
+  
+  // Show stage information at bottom
+  textSize(11);
+  fill(200);
+  
+  text("Stage: " + info.name + " (" + info.touches + " touches)", width / 2, height - 100);
+  text("Evolution: " + info.progress + "%", width / 2, height - 80);
+  text("Resistance: " + info.resistance + "% | Excitability: " + info.excitability + "%", width / 2, height - 60);
+  
+  textSize(10);
+  fill(180);
+  text("Infant → Child → Adult → Elder", width / 2, height - 30);
+}
+
+// ==============================================
+// SCENE 3 - FACE TRACKING WITH COLORED BACKGROUND
+// ==============================================
+function drawScene3() {
+  // Background behavior depends on `scene3UseColor`.
+  if (scene3UseColor) {
+    // Colored background for rounds 1 & 2
+    background(scene3BGColor);
+  } else {
+    // No colorful background for round 3 - clear to black before showing video
+    background(0);
+  }
+  
+  // Draw the camera feed
+  // Only draw the camera/video in round 3 (when we don't use a colorful background).
+  // For rounds 1-2 we still run face tracking (off-screen) but do not render the video feed.
+  if (!scene3UseColor && SHOW_VIDEO) {
+    image(cam, 0, 0);
+  }
+  
+  // Draw face tracking data
+  if (faces.length > 0) {
+    drawScene3FaceTracking();
+  }
+  
+  // Draw Scene 3 UI
+  drawScene3UI();
+}
+
+function drawScene3FaceTracking() {
+  let face = faces[0];  // Get the first detected face
+  
+  if (!face.keypoints || face.keypoints.length === 0) return;
+  
+  // Get tracked keypoint (nose by default, index 1)
+  let trackedKeypoint = face.keypoints[TRACKED_KEYPOINT_INDEX];
+  if (!trackedKeypoint) return;
+  
+  // Map to screen coordinates
+  cursor = cam.mapKeypoint(trackedKeypoint);
+  
+  // Draw large cursor circle at face position
+  push();
+  fill(255, 0, 255, 150);  // Magenta with transparency
+  noStroke();
+  ellipse(cursor.x, cursor.y, CURSOR_SIZE * 2, CURSOR_SIZE * 2);
+  
+  // Draw crosshair
+  stroke(255, 0, 255);
+  strokeWeight(3);
+  line(cursor.x - 20, cursor.y, cursor.x + 20, cursor.y);
+  line(cursor.x, cursor.y - 20, cursor.x, cursor.y + 20);
+  pop();
+  
+  // Display face data coordinates
+  push();
+  fill(255);
+  stroke(0);
+  strokeWeight(3);
+  textAlign(CENTER, TOP);
+  textSize(16);
+  text('X: ' + cursor.x.toFixed(0) + ' | Y: ' + cursor.y.toFixed(0), 
+       width / 2, 30);
+  
+  // Show confidence score if available
+  if (cursor.z !== undefined) {
+    textSize(14);
+    fill(200);
+    text('Confidence: ' + (cursor.z * 100).toFixed(1) + '%', width / 2, 60);
   }
   pop();
+  
+  // Optional: Draw all face keypoints
+  if (SHOW_ALL_KEYPOINTS) {
+    let allPoints = cam.mapKeypoints(face.keypoints);
+    
+    push();
+    fill(0, 255, 0, 80);  // Green, semi-transparent
+    noStroke();
+    for (let point of allPoints) {
+      ellipse(point.x, point.y, KEYPOINT_SIZE, KEYPOINT_SIZE);
+    }
+    pop();
+  }
 }
+
+function drawScene3UI() {
+  push();
+  fill(255);
+  stroke(0);
+  strokeWeight(2);
+  textAlign(CENTER, BOTTOM);
+  textSize(16);
+  
+  // Status message at bottom
+  if (!cam.ready) {
+    text('Initializing camera...', width/2, height - 20);
+  } else if (faces.length === 0) {
+    text('Show your face to camera', width/2, height - 20);
+  } else {
+    text('Tracking face keypoint: ' + TRACKED_KEYPOINT_INDEX, width/2, height - 20);
+  }
+
+  // For rounds 1-2 show an extra instructional line per user's request
+  if (currentRound < 3) {
+    push();
+    textSize(10);
+    fill(80, 80, 80);
+    textAlign(CENTER, TOP);
+    // Split into shorter lines so it fits on-screen
+    text("no you still have to", width/2, 80);
+    text("see my skeleton more", width/2, 102);
+    pop();
+    
+    // Add larger text asking user to continue or go to beginning
+    push();
+    textSize(16);
+    fill(0);
+    textAlign(CENTER, TOP);
+    text("Go to the beginning or stay?", width / 2, height / 2 + 80);
+    pop();
+  }
+  
+  // For rounds 1-2, show Continue button during success display
+  if (currentRound < 3) {
+    if (isShowingSuccess) {
+      // Draw Continue button in the center-bottom area
+      push();
+      fill(80, 200, 100);
+      stroke(0);
+      strokeWeight(2);
+      rectMode(CENTER);
+      let btnX = width / 2;
+      let btnY = height - 80;
+      let btnW = 120;
+      let btnH = 50;
+      rect(btnX, btnY, btnW, btnH, 8);
+      fill(255);
+      noStroke();
+      textAlign(CENTER, CENTER);
+      textSize(16);
+      text('Continue', btnX, btnY);
+      pop();
+      
+      // Store button bounds for touch/click detection
+      window.continueButtonBounds = {
+        x: btnX - btnW / 2,
+        y: btnY - btnH / 2,
+        w: btnW,
+        h: btnH
+      };
+    } else {
+      // Back button (top left) when not showing success
+      fill(100, 100, 255);
+      stroke(0);
+      strokeWeight(2);
+      rectMode(CENTER);
+      rect(40, 30, 70, 40, 5);
+      fill(255);
+      noStroke();
+      textAlign(CENTER, CENTER);
+      textSize(14);
+      text('Back', 40, 30);
+    }
+  }
+  
+  pop();
+}
+
+
+
   function drawFaceTracking() {
   let face = faces[0];  // Ge
  if (!face.keypoints || face.keypoints.length === 0) return;
@@ -777,20 +1532,130 @@ function drawUI() {
  * Ensures consistent interaction experience across devices.
  */
 function touchStarted() {
-  SHOW_VIDEO = !SHOW_VIDEO;
-  return false;  // Prevent default to avoid interfering with camera/ML5
+  // Scene 1: Skip button
+  if (currentScene === 1) {
+    let skipX = width - 50;
+    let skipY = 30;
+    let skipW = 80;
+    let skipH = 36;
+    if (mouseX > skipX - skipW/2 && mouseX < skipX + skipW/2 && mouseY > skipY - skipH/2 && mouseY < skipY + skipH/2) {
+      // move to scene 2 immediately
+      goToScene2Skip();
+      return false;
+    }
+  }
+  // Scene 3: Back button or Continue button
+  if (currentScene === 3) {
+    // Check for Continue button (rounds 1-2 during success)
+    if (isShowingSuccess && currentRound < 3 && window.continueButtonBounds) {
+      let bounds = window.continueButtonBounds;
+      if (mouseX > bounds.x && mouseX < bounds.x + bounds.w && 
+          mouseY > bounds.y && mouseY < bounds.y + bounds.h) {
+        // Continue button pressed
+        isShowingSuccess = false;
+        if (currentRound < 3) {
+          currentRound++;
+          currentScene = 1;
+          // Ensure Scene 1 is reset for the new round
+          resetScene1();
+          // Also pick a new set of images for Scene 2 for this round
+          selectScene2Images();
+          // Update the stage images to match this round
+          applyStageImagesForRound(currentRound);
+        } else {
+          // Completed round 3 successfully -> final face-tracking-only scene
+          currentScene = 4;
+        }
+        return false;
+      }
+    }
+    // Check for Back button (top left, rounds 1-2 when not showing success)
+    if (!isShowingSuccess && currentRound < 3) {
+      if (mouseX > 5 && mouseX < 75 && mouseY > 10 && mouseY < 50) {
+        currentScene = 2;
+        return false;
+      }
+    }
+  }
+  
+  // Scene 2: Check if touching interactive circle
+  if (currentScene === 2) {
+    if (interactiveCircle.contains(mouseX, mouseY)) {
+      interactiveCircle.onTouch();
+    }
+  }
+  
+  return false;
 }
+
 function touchEnded() {
-  return false;  // Returning false prevents default behavior
+  return false;
 }
 
-/**
- * Mouse Pressed Handler
- * 
- * Toggles debug information visibility on mouse click (for desktop testing).
- */
 function mousePressed() {
-  // Toggle debug info visibility
-  showDebugInfo = !showDebugInfo;
+  // Scene 1: Skip button (mouse)
+  if (currentScene === 1) {
+    let skipX = width - 50;
+    let skipY = 30;
+    let skipW = 80;
+    let skipH = 36;
+    if (mouseX > skipX - skipW/2 && mouseX < skipX + skipW/2 && mouseY > skipY - skipH/2 && mouseY < skipY + skipH/2) {
+      goToScene2Skip();
+      return;
+    }
+  }
+  // Scene 3: Back button or Continue button
+  if (currentScene === 3) {
+    // Check for Continue button (rounds 1-2 during success)
+    if (isShowingSuccess && currentRound < 3 && window.continueButtonBounds) {
+      let bounds = window.continueButtonBounds;
+      if (mouseX > bounds.x && mouseX < bounds.x + bounds.w && 
+          mouseY > bounds.y && mouseY < bounds.y + bounds.h) {
+        // Continue button pressed
+        isShowingSuccess = false;
+        if (currentRound < 3) {
+          currentRound++;
+          currentScene = 1;
+          // Ensure Scene 1 is reset for the new round
+          resetScene1();
+          // Also pick a new set of images for Scene 2 for this round
+          selectScene2Images();
+          // Update the stage images to match this round
+          applyStageImagesForRound(currentRound);
+        } else {
+          // Completed round 3 successfully -> final face-tracking-only scene
+          currentScene = 4;
+        }
+        return;
+      }
+    }
+    // Check for Back button (top left, rounds 1-2 when not showing success)
+    if (!isShowingSuccess && currentRound < 3) {
+      if (mouseX > 5 && mouseX < 75 && mouseY > 10 && mouseY < 50) {
+        currentScene = 2;
+        return;
+      }
+    }
+  }
+  
+  // Scene 2: Check if touching interactive circle
+  if (currentScene === 2) {
+    if (interactiveCircle.contains(mouseX, mouseY)) {
+      interactiveCircle.onTouch();
+    }
+  }
+  
+  // Scene 1: Toggle debug info
+  if (currentScene === 1) {
+    showDebugInfo = !showDebugInfo;
+  }
+}
 
+// Helper to jump to Scene 2 from Scene 1 (skip collecting everything)
+function goToScene2Skip() {
+  console.log('Skipping to Scene 2');
+  currentScene = 2;
+  // Make sure Scene 2 has images for the current round
+  selectScene2Images();
+  applyStageImagesForRound(currentRound);
 }
