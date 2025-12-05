@@ -1601,7 +1601,7 @@ function touchEnded() {
   return false;
 }
 
-function touchPressed() {
+/*function touchPressed() {
   // Scene 1: Skip button (mouse)
   if (currentScene === 1) {
     let skipX = width - 50;
@@ -1669,4 +1669,4 @@ function goToScene2Skip() {
   selectScene2Images();
   applyStageImagesForRound(currentRound);
 }
-}
+}*/
