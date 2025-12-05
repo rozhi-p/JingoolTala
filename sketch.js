@@ -1531,14 +1531,14 @@ function drawUI() {
  * Prevents default mobile browser behavior when touch is released.
  * Ensures consistent interaction experience across devices.
  */
-function touchStarted() {
+/*function touchStarted() {
   // Scene 1: Skip button
   if (currentScene === 1) {
     let skipX = width - 50;
     let skipY = 30;
     let skipW = 80;
     let skipH = 36;
-    if (touches[0].x > skipX - skipW/2 && touches[0].x < skipX + skipW/2 && touches[0].y> skipY - skipH/2 && touches[0].y < skipY + skipH/2) {
+    if (t.x > skipX - skipW/2 && t.x < skipX + skipW/2 && t.y> skipY - skipH/2 && t.y < skipY + skipH/2) {
       // move to scene 2 immediately
       goToScene2Skip();
       return false;
@@ -1549,8 +1549,8 @@ function touchStarted() {
     // Check for Continue button (rounds 1-2 during success)
     if (isShowingSuccess && currentRound < 3 && window.continueButtonBounds) {
       let bounds = window.continueButtonBounds;
-      if (touches[0].x > bounds.x && touches[0].x < bounds.x + bounds.w && 
-          touches[0].y > bounds.y && touches[0].y < bounds.y + bounds.h) {
+      if (t.x > bounds.x && t.x < bounds.x + bounds.w && 
+          t.y > bounds.y && t.y < bounds.y + bounds.h) {
         // Continue button pressed
         isShowingSuccess = false;
         if (currentRound < 3) {
@@ -1571,7 +1571,7 @@ function touchStarted() {
     }
     // Check for Back button (top left, rounds 1-2 when not showing success)
     if (!isShowingSuccess && currentRound < 3) {
-      if (touches[0].x> 5 && touches[0].x < 75 && touches[0].y > 10 && touches[0].y< 50) {
+      if (t.x> 5 && t.x < 75 && t.y > 10 && t.y< 50) {
         currentScene = 2;
         return false;
       }
@@ -1580,17 +1580,63 @@ function touchStarted() {
   
   // Scene 2: Check if touching interactive circle
   if (currentScene === 2) {
-    if (interactiveCircle.contains(touches[0].x, touches[0].y)) {
+    if (interactiveCircle.contains(t.x, t.y)) {
       interactiveCircle.onTouch();
     }
   }
   
   return false;
+}*/
+function touchStarted() {
+  if (touches.length === 0) return false;
+  let t = touches[0];
+
+  // Scene 1 Skip
+  if (currentScene === 1) {
+    let skipX = width - 50, skipY = 30, skipW = 80, skipH = 36;
+    if (t.x > skipX-skipW/2 && t.x < skipX+skipW/2 && 
+        t.y > skipY-skipH/2 && t.y < skipY+skipH/2) {
+      goToScene2Skip();
+      return false;
+    }
+  }
+
+  // Scene 2 circle
+  if (currentScene === 2 && interactiveCircle.contains(t.x, t.y)) {
+    interactiveCircle.onTouch();
+  }
+
+  // Scene 3 buttons (FIXED continue logic)
+  if (currentScene === 3 && currentRound < 3) {
+    if (isShowingSuccess && window.continueButtonBounds) {
+      let b = window.continueButtonBounds;
+      if (t.x > b.x && t.x < b.x + b.w && t.y > b.y && t.y < b.y + b.h) {
+        isShowingSuccess = false;
+        if (currentRound < 3) {
+          currentRound++;
+          currentScene = 1;
+          resetScene1();
+          selectScene2Images();
+          applyStageImagesForRound(currentRound);
+        } else {
+          currentScene = 4;
+        }
+        return false;
+      }
+    } else if (!isShowingSuccess) {
+      if (t.x > 5 && t.x < 75 && t.y > 10 && t.y < 50) {
+        currentScene = 2;
+        return false;
+      }
+    }
+  }
+  return false;
 }
+
 function touchMoved() {
-  // Handle continuous touch on interactive circle in Scene 2
   if (currentScene === 2 && touches.length > 0) {
-    if (interactiveCircle.contains(touches[0].x, touches[0].y)) {
+    let t = touches[0];  // ← FIXED: define t here
+    if (interactiveCircle.contains(t.x, t.y)) {
       interactiveCircle.onTouch();
     }
   }
@@ -1601,72 +1647,45 @@ function touchEnded() {
   return false;
 }
 
-/*function touchPressed() {
-  // Scene 1: Skip button (mouse)
+function mousePressed() {
+  // Desktop: same logic using mouseX/Y
+  let mx = mouseX, my = mouseY;
+  
   if (currentScene === 1) {
-    let skipX = width - 50;
-    let skipY = 30;
-    let skipW = 80;
-    let skipH = 36;
-    if (touches[0].x > skipX - skipW/2 && touches[0].x < skipX + skipW/2 && touches[0].y > skipY - skipH/2 && touches[0].y < skipY + skipH/2) {
+    let skipX = width - 50, skipY = 30, skipW = 80, skipH = 36;
+    if (mx > skipX-skipW/2 && mx < skipX+skipW/2 && 
+        my > skipY-skipH/2 && my < skipY+skipH/2) {
       goToScene2Skip();
-      return;
+      return false;
     }
   }
- 
-  // Scene 3: Back button or Continue button
-  if (currentScene === 3) {
-    // Check for Continue button (rounds 1-2 during success)
-    if (isShowingSuccess && currentRound < 3 && window.continueButtonBounds) {
-      let bounds = window.continueButtonBounds;
-      if (touches[0].x > bounds.x && touches[0].x < bounds.x + bounds.w && 
-          touches[0].y > bounds.y && touches[0].y < bounds.y + bounds.h) {
-        // Continue button pressed
+  
+  if (currentScene === 2 && interactiveCircle.contains(mx, my)) {
+    interactiveCircle.onTouch();
+  }
+  
+  if (currentScene === 3 && currentRound < 3) {
+    if (isShowingSuccess && window.continueButtonBounds) {
+      let b = window.continueButtonBounds;
+      if (mx > b.x && mx < b.x + b.w && my > b.y && my < b.y + b.h) {
         isShowingSuccess = false;
         if (currentRound < 3) {
           currentRound++;
           currentScene = 1;
-          // Ensure Scene 1 is reset for the new round
           resetScene1();
-          // Also pick a new set of images for Scene 2 for this round
           selectScene2Images();
-          // Update the stage images to match this round
           applyStageImagesForRound(currentRound);
         } else {
-          // Completed round 3 successfully -> final face-tracking-only scene
           currentScene = 4;
         }
-        return;
+        return false;
       }
-    }
-    // Check for Back button (top left, rounds 1-2 when not showing success)
-    if (!isShowingSuccess && currentRound < 3) {
-      if (touches[0].x > 5 && touches[0].x< 75 && touches[0].y > 10 && touches[0].y < 50) {
+    } else if (!isShowingSuccess) {
+      if (mx > 5 && mx < 75 && my > 10 && my < 50) {
         currentScene = 2;
-        return;
+        return false;
       }
     }
   }
-  
-  // Scene 2: Check if touching interactive circle
-  if (currentScene === 2) {
-    if (interactiveCircle.contains(touches[0].x, touches[0].y)) {
-      interactiveCircle.onTouch();
-    }
-  }
-  
-  // Scene 1: Toggle debug info
-  if (currentScene === 1) {
-    showDebugInfo = !showDebugInfo;
-  }
-
-
-// Helper to jump to Scene 2 from Scene 1 (skip collecting everything)
-function goToScene2Skip() {
-  console.log('Skipping to Scene 2');
-  currentScene = 2;
-  // Make sure Scene 2 has images for the current round
-  selectScene2Images();
-  applyStageImagesForRound(currentRound);
+  return false;
 }
-}*/
