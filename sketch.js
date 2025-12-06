@@ -1588,104 +1588,51 @@ function drawUI() {
   return false;
 }*/
 function touchStarted() {
-  if (touches.length === 0) return false;
-  let t = touches[0];
+  // Check if we have valid touch data
+  if (!touches || touches.length === 0) return false;
+  
+  let tx = touches[0].x;
+  let ty = touches[0].y;
 
-  // Scene 1 Skip
+  // Scene 1 Skip button
   if (currentScene === 1) {
     let skipX = width - 50, skipY = 30, skipW = 80, skipH = 36;
-    if (t.x > skipX-skipW/2 && t.x < skipX+skipW/2 && 
-        t.y > skipY-skipH/2 && t.y < skipY+skipH/2) {
+    if (tx > skipX - skipW/2 && tx < skipX + skipW/2 && 
+        ty > skipY - skipH/2 && ty < skipY + skipH/2) {
       goToScene2Skip();
       return false;
     }
   }
 
-  // Scene 2 circle
-  if (currentScene === 2 && interactiveCircle.contains(t.x, t.y)) {
-    interactiveCircle.onTouch();
-  }
-
-  // Scene 3 buttons (FIXED continue logic)
-  if (currentScene === 3 && currentRound < 3) {
-    if (isShowingSuccess && window.continueButtonBounds) {
-      let b = window.continueButtonBounds;
-      if (t.x > b.x && t.x < b.x + b.w && t.y > b.y && t.y < b.y + b.h) {
-        isShowingSuccess = false;
-        if (currentRound < 3) {
-          currentRound++;
-          currentScene = 1;
-          resetScene1();
-          selectScene2Images();
-          applyStageImagesForRound(currentRound);
-        } else {
-          currentScene = 4;
-        }
-        return false;
-      }
-    } else if (!isShowingSuccess) {
-      if (t.x > 5 && t.x < 75 && t.y > 10 && t.y < 50) {
-        currentScene = 2;
-        return false;
-      }
-    }
-  }
-  return false;
-}
-
-function touchMoved() {
-  if (currentScene === 2 && touches.length > 0) {
-    let t = touches[0];  // ← FIXED: define t here
-    if (interactiveCircle.contains(t.x, t.y)) {
+  // Scene 2 interactive circle
+  if (currentScene === 2) {
+    if (interactiveCircle.contains(tx, ty)) {
       interactiveCircle.onTouch();
-    }
-  }
-  return false;
-}
-
-function touchEnded() {
-  return false;
-}
-
-function mousePressed() {
-  // Desktop: same logic using mouseX/Y
-  let mx = mouseX, my = mouseY;
-  
-  if (currentScene === 1) {
-    let skipX = width - 50, skipY = 30, skipW = 80, skipH = 36;
-    if (mx > skipX-skipW/2 && mx < skipX+skipW/2 && 
-        my > skipY-skipH/2 && my < skipY+skipH/2) {
-      goToScene2Skip();
       return false;
     }
   }
-  
-  if (currentScene === 2 && interactiveCircle.contains(mx, my)) {
-    interactiveCircle.onTouch();
-  }
-  
+
+  // Scene 3 buttons
   if (currentScene === 3 && currentRound < 3) {
     if (isShowingSuccess && window.continueButtonBounds) {
       let b = window.continueButtonBounds;
-      if (mx > b.x && mx < b.x + b.w && my > b.y && my < b.y + b.h) {
+      if (tx > b.x && tx < b.x + b.w && ty > b.y && ty < b.y + b.h) {
         isShowingSuccess = false;
-        if (currentRound < 3) {
-          currentRound++;
-          currentScene = 1;
-          resetScene1();
-          selectScene2Images();
-          applyStageImagesForRound(currentRound);
-        } else {
-          currentScene = 4;
-        }
+        currentRound++;
+        currentScene = 1;
+        resetScene1();
+        selectScene2Images();
+        applyStageImagesForRound(currentRound);
         return false;
       }
     } else if (!isShowingSuccess) {
-      if (mx > 5 && mx < 75 && my > 10 && my < 50) {
+      // Back button
+      if (tx > 5 && tx < 75 && ty > 10 && ty < 50) {
         currentScene = 2;
         return false;
       }
     }
   }
+  
   return false;
 }
