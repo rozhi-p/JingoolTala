@@ -1588,17 +1588,37 @@ function drawUI() {
   return false;
 }*/
 function touchStarted() {
-  // Check if we have valid touch data
-  if (!touches || touches.length === 0) return false;
+  console.log("touchStarted called, currentScene:", currentScene);
   
-  let tx = touches[0].x;
-  let ty = touches[0].y;
+  // CRITICAL: On mobile, we MUST use the touches array, not mouseX/mouseY
+  let tx, ty;
+  
+  if (touches && touches.length > 0) {
+    // Mobile touch - this is what we need!
+    tx = touches[0].x;
+    ty = touches[0].y;
+    console.log("Using touch coordinates:", tx, ty);
+  } else {
+    // Desktop fallback
+    tx = mouseX;
+    ty = mouseY;
+    console.log("Using mouse coordinates:", tx, ty);
+  }
+  
+  console.log("Touch/Click at:", tx, ty, "Canvas size:", width, height);
 
   // Scene 1 Skip button
   if (currentScene === 1) {
     let skipX = width - 50, skipY = 30, skipW = 80, skipH = 36;
-    if (tx > skipX - skipW/2 && tx < skipX + skipW/2 && 
-        ty > skipY - skipH/2 && ty < skipY + skipH/2) {
+    let skipLeft = skipX - skipW/2;
+    let skipRight = skipX + skipW/2;
+    let skipTop = skipY - skipH/2;
+    let skipBottom = skipY + skipH/2;
+    
+    console.log("Skip button bounds:", skipLeft, skipTop, skipRight, skipBottom);
+    
+    if (tx > skipLeft && tx < skipRight && ty > skipTop && ty < skipBottom) {
+      console.log("Skip button HIT!");
       goToScene2Skip();
       return false;
     }
@@ -1606,7 +1626,9 @@ function touchStarted() {
 
   // Scene 2 interactive circle
   if (currentScene === 2) {
+    console.log("Checking circle at:", interactiveCircle.x, interactiveCircle.y, "radius:", interactiveCircle.currentRadius);
     if (interactiveCircle.contains(tx, ty)) {
+      console.log("Circle HIT!");
       interactiveCircle.onTouch();
       return false;
     }
@@ -1616,7 +1638,9 @@ function touchStarted() {
   if (currentScene === 3 && currentRound < 3) {
     if (isShowingSuccess && window.continueButtonBounds) {
       let b = window.continueButtonBounds;
+      console.log("Continue button bounds:", b);
       if (tx > b.x && tx < b.x + b.w && ty > b.y && ty < b.y + b.h) {
+        console.log("Continue button HIT!");
         isShowingSuccess = false;
         currentRound++;
         currentScene = 1;
@@ -1628,6 +1652,7 @@ function touchStarted() {
     } else if (!isShowingSuccess) {
       // Back button
       if (tx > 5 && tx < 75 && ty > 10 && ty < 50) {
+        console.log("Back button HIT!");
         currentScene = 2;
         return false;
       }
