@@ -388,8 +388,8 @@ class InteractiveCircle {
   }
   
   // Draw stage indicator (same as before)
-  colorMode(RGB, 255);
-  fill(255);
+  colorMode(RGB, 0);
+  fill(0);
   noStroke();
   textSize(12);
   textAlign(CENTER, CENTER);
@@ -574,52 +574,55 @@ function gotFaces(results) {
  * Each item is placed at a random depth (Y position between minY and maxY),
  * and positioned horizontally on either the left or right perspective line.
  */
-function randomizeCollectiblePositions() {
+function CollectiblePositions() {
   // Generate random positions for each collectible
   
   // BECK - Left line
-  let beckDepth = random(minY + 50, maxY - 50);  // Random Y position
-  let beckProgress = map(beckDepth, minY, maxY, 0, 1);  // 0 at top, 1 at bottom
-  beckX = lerp(width * 0.4, 0, beckProgress);  // Interpolate from right perspective point to left edge
-  beckY = beckDepth;
+
+
+  
+  // BECK - scattered in bottom rectangle
+  beck.position (90, 40);  // Random X (independent)
+  //beckY = random(minYArea, maxYArea);// Random X within margins
+  beck2.position (90, 40); 
+  
   // Second beck
-  let beckDepth2 = random(minY + 50, maxY - 50);
-  let beckProgress2 = map(beckDepth2, minY, maxY, 0, 1);
-  beck2X = lerp(width * 0.4, 0, beckProgress2);
-  beck2Y = beckDepth2;
+  reck2.position(90, 40); 
+  reck.position(90, 40); 
+
+  jeck.position (90, 40);
+  jeck2.position (90, 40);
+
   
-  // RECK - Right line
-  let reckDepth = random(minY + 50, maxY - 50);
-  let reckProgress = map(reckDepth, minY, maxY, 0, 1);
-  reckX = lerp(width * 0.6, width, reckProgress);  // Interpolate from left perspective point to right edge
-  reckY = reckDepth;
+
+  leck.position(90, 40);
+   leck2.position(90, 40);
+
+  
+  
+  // RECK - scattered in bottom rectangle
+ /* reckY = random(minX, maxX);
+  reckX = random(minYArea, maxYArea);
+  
   // Second reck
-  let reckDepth2 = random(minY + 50, maxY - 50);
-  let reckProgress2 = map(reckDepth2, minY, maxY, 0, 1);
-  reck2X = lerp(width * 0.6, width, reckProgress2);
-  reck2Y = reckDepth2;
+  reck2Y = random(minX, maxX);
+  reck2X = random(minYArea, maxYArea);
   
-  // LECK - Left line
-  let leckDepth = random(minY + 50, maxY - 50);
-  let leckProgress = map(leckDepth, minY, maxY, 0, 1);
-  leckX = lerp(width * 0.4, 0, leckProgress);
-  leckY = leckDepth;
+  // LECK - scattered in bottom rectangle
+  leckY = random(minX, maxX);
+  leckX = random(minYArea, maxYArea);
+  
   // Second leck
-  let leckDepth2 = random(minY + 50, maxY - 50);
-  let leckProgress2 = map(leckDepth2, minY, maxY, 0, 1);
-  leck2X = lerp(width * 0.4, 0, leckProgress2);
-  leck2Y = leckDepth2;
+  leck2Y = random(minX, maxX);
+  leck2X = random(minYArea, maxYArea);
   
-  // JECK - Right line
-  let jeckDepth = random(minY + 50, maxY - 50);
-  let jeckProgress = map(jeckDepth, minY, maxY, 0, 1);
-  jeckX = lerp(width * 0.6, width, jeckProgress);
-  jeckY = jeckDepth;
+  // JECK - scattered in bottom rectangle
+  jeckY = random(minX, maxX);
+  jeckX = random(minYArea, maxYArea);
+  
   // Second jeck
-  let jeckDepth2 = random(minY + 50, maxY - 50);
-  let jeckProgress2 = map(jeckDepth2, minY, maxY, 0, 1);
-  jeck2X = lerp(width * 0.6, width, jeckProgress2);
-  jeck2Y = jeckDepth2;
+  jeck2Y = random(minX, maxX);
+  jeck2X = random(minYArea, maxYArea);*/
 }
 
 function checkSceneTransition() {
@@ -652,7 +655,7 @@ function resetScene1() {
   collectedItems = 0;
   
   // Randomly position collectibles on perspective lines
-  randomizeCollectiblePositions();
+ /* randomizeCollectiblePositions();
   
   // Reset character position
   character.x = width / 2;
@@ -663,9 +666,10 @@ function resetScene1() {
   introversion = 100;
   
   console.log("Scene 1 reset!");
-}
+}*/
 
 // Select 4 unique images from the pool for the current round
+}
 function selectScene2Images() {
   scene2Selected = [];
 
@@ -694,6 +698,7 @@ function selectScene2Images() {
 // ==============================================
 // DRAW - Main game loop (runs continuously at 60fps)
 // ==============================================
+}
 function draw() {
   // Rounds are untimed now - no elapsed/timeRemaining computation or timeout handling
 
@@ -717,7 +722,7 @@ function draw() {
 
   // Draw round overlay (no timer)
   push();
-  fill(255);
+  fill(0);
   textSize(18);
   textAlign(CENTER);
   text('Round ' + currentRound, width / 2, 22);
@@ -740,7 +745,7 @@ function drawScene1() {
   
   // Draw collectibles UI
   push();
-  fill(255);
+  fill(0);
   textSize(20);
   textAlign(CENTER);
   text("Collected: " + collectedItems + "/" + totalCollectibles, width / 2, 30);
@@ -767,7 +772,7 @@ function drawScene1() {
   let skipW = 80;
   let skipH = 36;
   rect(skipX, skipY, skipW, skipH, 6);
-  fill(255);
+  fill(0);
   noStroke();
   textSize(14);
   textAlign(CENTER, CENTER);
@@ -1436,7 +1441,7 @@ function updateDepthScale() {
  * - 1 horizontal line at back connects the converging lines
  * - 2 vertical lines extend from back to top of canvas (walls)
  */
-function drawPerspective() {
+/*function drawPerspective() {
   // Start drawing context with semi-transparent white lines
   push();
   stroke(255, 150);  // White with 150 alpha (semi-transparent)
@@ -1468,7 +1473,7 @@ function drawPerspective() {
   line(width * 0.6, minY, width * 0.6, 0);
   
   pop();  // Restore drawing context
-}
+}*/
 
 /**
  * Draw UI Information
@@ -1481,7 +1486,7 @@ function drawUI() {
   if (!showDebugInfo) return;
   
   push();
-  fill(255);
+  fill(0);
   textSize(16);
   textAlign(LEFT, TOP);
   
@@ -1587,6 +1592,7 @@ function drawUI() {
   
   return false;
 }*/
+
 function touchStarted() {
   console.log("touchStarted called, currentScene:", currentScene);
   
