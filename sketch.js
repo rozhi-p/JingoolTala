@@ -947,7 +947,7 @@ function drawScene1() {
       }
     }
 
-  //drawPerspective();
+  drawPerspective();
   checkSceneTransition();
 
 
@@ -1436,7 +1436,7 @@ function updateDepthScale() {
  * - 1 horizontal line at back connects the converging lines
  * - 2 vertical lines extend from back to top of canvas (walls)
  */
-/*function drawPerspective() {
+function drawPerspective() {
   // Start drawing context with semi-transparent white lines
   push();
   stroke(255, 150);  // White with 150 alpha (semi-transparent)
