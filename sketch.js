@@ -1603,6 +1603,7 @@ function touchStarted() {
       return false;
     }
   }
+  //I hate this course
 
   // Scene 2 interactive circle
   if (currentScene === 2) {
