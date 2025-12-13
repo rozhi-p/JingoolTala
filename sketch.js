@@ -578,51 +578,48 @@ function randomizeCollectiblePositions() {
   // Generate random positions for each collectible
   
   // BECK - Left line
-
-
-  
-  // BECK - scattered in bottom rectangle
-  beck.position (90, 70);  // Random X (independent)
-  //beckY = random(minYArea, maxYArea);// Random X within margins
-  beck2.position (90, 70); 
-  
+  let beckDepth = random(minY + 50, maxY - 50);  // Random Y position
+  let beckProgress = map(beckDepth, minY, maxY, 0, 1);  // 0 at top, 1 at bottom
+  beckX = lerp(width * 0.4, 0, beckProgress);  // Interpolate from right perspective point to left edge
+  beckY = beckDepth;
   // Second beck
-  reck2.position(90, 40); 
-  reck.position(90, 40); 
-
-  jeck.position (90, 70);
-  jeck2.position (90, 70);
-
+  let beckDepth2 = random(minY + 50, maxY - 50);
+  let beckProgress2 = map(beckDepth2, minY, maxY, 0, 1);
+  beck2X = lerp(width * 0.4, 0, beckProgress2);
+  beck2Y = beckDepth2;
   
-
-  leck.position (90, 70);
-   leck2.position (90, 70);
-
-  
-  
-  // RECK - scattered in bottom rectangle
- /* reckY = random(minX, maxX);
-  reckX = random(minYArea, maxYArea);
-  
+  // RECK - Right line
+  let reckDepth = random(minY + 50, maxY - 50);
+  let reckProgress = map(reckDepth, minY, maxY, 0, 1);
+  reckX = lerp(width * 0.6, width, reckProgress);  // Interpolate from left perspective point to right edge
+  reckY = reckDepth;
   // Second reck
-  reck2Y = random(minX, maxX);
-  reck2X = random(minYArea, maxYArea);
+  let reckDepth2 = random(minY + 50, maxY - 50);
+  let reckProgress2 = map(reckDepth2, minY, maxY, 0, 1);
+  reck2X = lerp(width * 0.6, width, reckProgress2);
+  reck2Y = reckDepth2;
   
-  // LECK - scattered in bottom rectangle
-  leckY = random(minX, maxX);
-  leckX = random(minYArea, maxYArea);
-  
+  // LECK - Left line
+  let leckDepth = random(minY + 50, maxY - 50);
+  let leckProgress = map(leckDepth, minY, maxY, 0, 1);
+  leckX = lerp(width * 0.4, 0, leckProgress);
+  leckY = leckDepth;
   // Second leck
-  leck2Y = random(minX, maxX);
-  leck2X = random(minYArea, maxYArea);
+  let leckDepth2 = random(minY + 50, maxY - 50);
+  let leckProgress2 = map(leckDepth2, minY, maxY, 0, 1);
+  leck2X = lerp(width * 0.4, 0, leckProgress2);
+  leck2Y = leckDepth2;
   
-  // JECK - scattered in bottom rectangle
-  jeckY = random(minX, maxX);
-  jeckX = random(minYArea, maxYArea);
-  
+  // JECK - Right line
+  let jeckDepth = random(minY + 50, maxY - 50);
+  let jeckProgress = map(jeckDepth, minY, maxY, 0, 1);
+  jeckX = lerp(width * 0.6, width, jeckProgress);
+  jeckY = jeckDepth;
   // Second jeck
-  jeck2Y = random(minX, maxX);
-  jeck2X = random(minYArea, maxYArea);*/
+  let jeckDepth2 = random(minY + 50, maxY - 50);
+  let jeckProgress2 = map(jeckDepth2, minY, maxY, 0, 1);
+  jeck2X = lerp(width * 0.6, width, jeckProgress2);
+  jeck2Y = jeckDepth2;
 }
 
 function checkSceneTransition() {
@@ -950,7 +947,7 @@ function drawScene1() {
       }
     }
 
-  drawPerspective();
+  //drawPerspective();
   checkSceneTransition();
 
 
@@ -1471,7 +1468,7 @@ function updateDepthScale() {
   line(width * 0.6, minY, width * 0.6, 0);
   
   pop();  // Restore drawing context
-}*/
+}
 
 /**
  * Draw UI Information
@@ -1591,76 +1588,104 @@ function drawUI() {
   return false;
 }*/
 function touchStarted() {
-  console.log("touchStarted called, currentScene:", currentScene);
-  
-  // CRITICAL: On mobile, we MUST use the touches array, not mouseX/mouseY
-  let tx, ty;
-  
-  if (touches && touches.length > 0) {
-    // Mobile touch - this is what we need!
-    tx = touches[0].x;
-    ty = touches[0].y;
-    console.log("Using touch coordinates:", tx, ty);
-  } else {
-    // Desktop fallback
-    tx = mouseX;
-    ty = mouseY;
-    console.log("Using mouse coordinates:", tx, ty);
-  }
-  
-  console.log("Touch/Click at:", tx, ty, "Canvas size:", width, height);
+  if (touches.length === 0) return false;
+  let t = touches[0];
 
-  // Scene 1 Skip button
+  // Scene 1 Skip
   if (currentScene === 1) {
     let skipX = width - 50, skipY = 30, skipW = 80, skipH = 36;
-    let skipLeft = skipX - skipW/2;
-    let skipRight = skipX + skipW/2;
-    let skipTop = skipY - skipH/2;
-    let skipBottom = skipY + skipH/2;
-    
-    console.log("Skip button bounds:", skipLeft, skipTop, skipRight, skipBottom);
-    
-    if (tx > skipLeft && tx < skipRight && ty > skipTop && ty < skipBottom) {
-      console.log("Skip button HIT!");
+    if (t.x > skipX-skipW/2 && t.x < skipX+skipW/2 && 
+        t.y > skipY-skipH/2 && t.y < skipY+skipH/2) {
       goToScene2Skip();
       return false;
     }
   }
 
-  // Scene 2 interactive circle
-  if (currentScene === 2) {
-    console.log("Checking circle at:", interactiveCircle.x, interactiveCircle.y, "radius:", interactiveCircle.currentRadius);
-    if (interactiveCircle.contains(tx, ty)) {
-      console.log("Circle HIT!");
-      interactiveCircle.onTouch();
-      return false;
-    }
+  // Scene 2 circle
+  if (currentScene === 2 && interactiveCircle.contains(t.x, t.y)) {
+    interactiveCircle.onTouch();
   }
 
-  // Scene 3 buttons
+  // Scene 3 buttons (FIXED continue logic)
   if (currentScene === 3 && currentRound < 3) {
     if (isShowingSuccess && window.continueButtonBounds) {
       let b = window.continueButtonBounds;
-      console.log("Continue button bounds:", b);
-      if (tx > b.x && tx < b.x + b.w && ty > b.y && ty < b.y + b.h) {
-        console.log("Continue button HIT!");
+      if (t.x > b.x && t.x < b.x + b.w && t.y > b.y && t.y < b.y + b.h) {
         isShowingSuccess = false;
-        currentRound++;
-        currentScene = 1;
-        resetScene1();
-        selectScene2Images();
-        applyStageImagesForRound(currentRound);
+        if (currentRound < 3) {
+          currentRound++;
+          currentScene = 1;
+          resetScene1();
+          selectScene2Images();
+          applyStageImagesForRound(currentRound);
+        } else {
+          currentScene = 4;
+        }
         return false;
       }
     } else if (!isShowingSuccess) {
-      // Back button
-      if (tx > 5 && tx < 75 && ty > 10 && ty < 50) {
-        console.log("Back button HIT!");
+      if (t.x > 5 && t.x < 75 && t.y > 10 && t.y < 50) {
         currentScene = 2;
         return false;
       }
     }
   }
+  return false;
+}
+
+function touchMoved() {
+  if (currentScene === 2 && touches.length > 0) {
+    let t = touches[0];  // ← FIXED: define t here
+    if (interactiveCircle.contains(t.x, t.y)) {
+      interactiveCircle.onTouch();
+    }
+  }
+  return false;
+}
+
+function touchEnded() {
+  return false;
+}
+
+function mousePressed() {
+  // Desktop: same logic using mouseX/Y
+  let mx = mouseX, my = mouseY;
   
+  if (currentScene === 1) {
+    let skipX = width - 50, skipY = 30, skipW = 80, skipH = 36;
+    if (mx > skipX-skipW/2 && mx < skipX+skipW/2 && 
+        my > skipY-skipH/2 && my < skipY+skipH/2) {
+      goToScene2Skip();
+      return false;
+    }
+  }
+  
+  if (currentScene === 2 && interactiveCircle.contains(mx, my)) {
+    interactiveCircle.onTouch();
+  }
+  
+  if (currentScene === 3 && currentRound < 3) {
+    if (isShowingSuccess && window.continueButtonBounds) {
+      let b = window.continueButtonBounds;
+      if (mx > b.x && mx < b.x + b.w && my > b.y && my < b.y + b.h) {
+        isShowingSuccess = false;
+        if (currentRound < 3) {
+          currentRound++;
+          currentScene = 1;
+          resetScene1();
+          selectScene2Images();
+          applyStageImagesForRound(currentRound);
+        } else {
+          currentScene = 4;
+        }
+        return false;
+      }
+    } else if (!isShowingSuccess) {
+      if (mx > 5 && mx < 75 && my > 10 && my < 50) {
+        currentScene = 2;
+        return false;
+      }
+    }
+  }
   return false;
 }
