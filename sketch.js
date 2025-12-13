@@ -388,8 +388,8 @@ class InteractiveCircle {
   }
   
   // Draw stage indicator (same as before)
-  colorMode(RGB, 0);
-  fill(0);
+  colorMode(RGB, 255);
+  fill(255);
   noStroke();
   textSize(12);
   textAlign(CENTER, CENTER);
@@ -574,7 +574,7 @@ function gotFaces(results) {
  * Each item is placed at a random depth (Y position between minY and maxY),
  * and positioned horizontally on either the left or right perspective line.
  */
-function CollectiblePositions() {
+function randomizeCollectiblePositions() {
   // Generate random positions for each collectible
   
   // BECK - Left line
@@ -582,21 +582,21 @@ function CollectiblePositions() {
 
   
   // BECK - scattered in bottom rectangle
-  beck.position (90, 40);  // Random X (independent)
+  beck.position (90, 70);  // Random X (independent)
   //beckY = random(minYArea, maxYArea);// Random X within margins
-  beck2.position (90, 40); 
+  beck2.position (90, 70); 
   
   // Second beck
   reck2.position(90, 40); 
   reck.position(90, 40); 
 
-  jeck.position (90, 40);
-  jeck2.position (90, 40);
+  jeck.position (90, 70);
+  jeck2.position (90, 70);
 
   
 
-  leck.position(90, 40);
-   leck2.position(90, 40);
+  leck.position (90, 70);
+   leck2.position (90, 70);
 
   
   
@@ -655,7 +655,7 @@ function resetScene1() {
   collectedItems = 0;
   
   // Randomly position collectibles on perspective lines
- /* randomizeCollectiblePositions();
+  randomizeCollectiblePositions();
   
   // Reset character position
   character.x = width / 2;
@@ -666,10 +666,9 @@ function resetScene1() {
   introversion = 100;
   
   console.log("Scene 1 reset!");
-}*/
+}
 
 // Select 4 unique images from the pool for the current round
-}
 function selectScene2Images() {
   scene2Selected = [];
 
@@ -698,7 +697,6 @@ function selectScene2Images() {
 // ==============================================
 // DRAW - Main game loop (runs continuously at 60fps)
 // ==============================================
-
 function draw() {
   // Rounds are untimed now - no elapsed/timeRemaining computation or timeout handling
 
@@ -722,7 +720,7 @@ function draw() {
 
   // Draw round overlay (no timer)
   push();
-  fill(0);
+  fill(255);
   textSize(18);
   textAlign(CENTER);
   text('Round ' + currentRound, width / 2, 22);
@@ -745,7 +743,7 @@ function drawScene1() {
   
   // Draw collectibles UI
   push();
-  fill(0);
+  fill(255);
   textSize(20);
   textAlign(CENTER);
   text("Collected: " + collectedItems + "/" + totalCollectibles, width / 2, 30);
@@ -772,7 +770,7 @@ function drawScene1() {
   let skipW = 80;
   let skipH = 36;
   rect(skipX, skipY, skipW, skipH, 6);
-  fill(0);
+  fill(255);
   noStroke();
   textSize(14);
   textAlign(CENTER, CENTER);
@@ -1486,7 +1484,7 @@ function drawUI() {
   if (!showDebugInfo) return;
   
   push();
-  fill(0);
+  fill(255);
   textSize(16);
   textAlign(LEFT, TOP);
   
@@ -1592,7 +1590,6 @@ function drawUI() {
   
   return false;
 }*/
-
 function touchStarted() {
   console.log("touchStarted called, currentScene:", currentScene);
   
