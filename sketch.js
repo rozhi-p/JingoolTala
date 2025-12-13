@@ -698,7 +698,7 @@ function selectScene2Images() {
 // ==============================================
 // DRAW - Main game loop (runs continuously at 60fps)
 // ==============================================
-}
+
 function draw() {
   // Rounds are untimed now - no elapsed/timeRemaining computation or timeout handling
 
